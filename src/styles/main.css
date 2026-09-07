@@ -1,38 +1,26 @@
 /* ==========================================================================
-   SAMS Spatial Agentic Visualiser - Blueprint Pixel & Frosted UI Theme
-   Accurate recreation of isometric tech workspace with tall director robot,
-   chibi workers, floating station badges, and 6-avatar expression dock.
+   SAMS Spatial Agentic Visualiser - Pure Workspace & Job Callouts Theme
+   Zero titles, zero logos, zero headers. Pure diorama workspace, robot models,
+   and delicate task callouts matching the reference design.
    ========================================================================== */
 
 :root {
-  /* Blueprint Soft Pastel Palette */
-  --bg-blueprint: #e0f2fe;
-  --grid-line: rgba(56, 189, 248, 0.22);
-  --bg-card: rgba(255, 255, 255, 0.82);
+  /* Pale Blue Blueprint Graph Paper Palette */
+  --bg-blueprint: #e4f1fc;
+  --grid-line: rgba(56, 189, 248, 0.24);
+  --bg-card: rgba(255, 255, 255, 0.88);
   --bg-card-solid: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.72);
+  --bg-glass: rgba(255, 255, 255, 0.82);
   --bg-glass-blur: blur(12px);
 
-  --border-badge: rgba(255, 255, 255, 0.9);
-  --border-subtle: rgba(148, 163, 184, 0.25);
-  --border-active: #0284c7;
+  --border-pill: rgba(255, 255, 255, 0.95);
+  --shadow-callout: 0 4px 14px -2px rgba(15, 23, 42, 0.09), 0 0 1px 1px rgba(255, 255, 255, 0.9);
 
-  --text-main: #1e293b;
-  --text-muted: #64748b;
   --text-dark: #0f172a;
-
-  --accent-cyan: #0284c7;
-  --accent-blue: #2563eb;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-rose: #ef4444;
-  --accent-purple: #8b5cf6;
+  --text-sub: #64748b;
 
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-
-  --shadow-badge: 0 4px 14px -2px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.8);
-  --shadow-dock: 0 12px 30px -4px rgba(15, 23, 42, 0.12), 0 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
 * {
@@ -49,8 +37,7 @@ html, body {
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 28px 28px;
-  color: var(--text-main);
+  background-size: 26px 26px;
   font-family: var(--font-sans);
   user-select: none;
   -webkit-font-smoothing: antialiased;
@@ -79,268 +66,117 @@ canvas#viewportCanvas:active {
 }
 
 /* ==========================================================================
-   TOP-LEFT BRAND LOGO (Blue pill with two white eyes)
+   FLOATING JOB CALLOUT PILLS (e.g. [•] [Icon] Desk 01 / Active Compute)
    ========================================================================== */
-.brand-pill-logo {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--bg-glass);
-  backdrop-filter: var(--bg-glass-blur);
-  padding: 8px 16px 8px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-badge);
-  box-shadow: var(--shadow-badge);
-}
-
-.logo-eye-icon {
-  width: 38px;
-  height: 24px;
-  background: #2563eb;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
-}
-
-.logo-dot {
-  width: 6px;
-  height: 6px;
-  background: #ffffff;
-  border-radius: 50%;
-}
-
-.brand-text {
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  color: var(--text-dark);
-}
-
-.brand-badge-mini {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: rgba(37, 99, 235, 0.12);
-  color: #2563eb;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-/* ==========================================================================
-   TOP-RIGHT METRICS PILL
-   ========================================================================== */
-.top-metrics {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 30;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.metric-card {
-  background: var(--bg-glass);
-  backdrop-filter: var(--bg-glass-blur);
-  border: 1px solid var(--border-badge);
-  box-shadow: var(--shadow-badge);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-dark);
-  font-weight: 700;
-}
-
-.metric-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-}
-
-/* ==========================================================================
-   FLOATING STATION BADGES (Vault, Whiteboard, Kanban, Desk 01, Security Gate)
-   ========================================================================== */
-.floating-badge {
+.job-callout-pill {
   position: absolute;
   pointer-events: auto;
   z-index: 25;
   background: var(--bg-glass);
   backdrop-filter: var(--bg-glass-blur);
-  border: 1px solid var(--border-badge);
+  border: 1px solid var(--border-pill);
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 4px 12px 4px 10px;
   display: flex;
   align-items: center;
   gap: 7px;
-  box-shadow: var(--shadow-badge);
+  box-shadow: var(--shadow-callout);
   transform: translate(-50%, -100%);
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
 }
 
-.floating-badge:hover {
+.job-callout-pill:hover {
   background: #ffffff;
-  transform: translate(-50%, -105%) scale(1.04);
-  box-shadow: 0 8px 20px -2px rgba(15, 23, 42, 0.12);
+  transform: translate(-50%, -105%) scale(1.03);
+  box-shadow: 0 6px 18px -2px rgba(15, 23, 42, 0.14);
 }
 
-.badge-icon {
-  width: 14px;
-  height: 14px;
+.callout-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.callout-icon {
+  width: 12px;
+  height: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #475569;
+  flex-shrink: 0;
 }
 
-.badge-label {
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: #1e293b;
+.callout-texts {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.callout-name {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--text-dark);
   letter-spacing: -0.2px;
 }
 
-/* ==========================================================================
-   BOTTOM DOCK CONTAINER & 6-AVATAR EXPRESSION SELECTOR
-   ========================================================================== */
-.bottom-dock-wrapper {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  z-index: 30;
-  max-width: 95vw;
+.callout-sep {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-/* The upper row: 6 robot avatars */
-.dock-expression-card {
-  background: var(--bg-glass);
-  backdrop-filter: var(--bg-glass-blur);
-  border: 1px solid var(--border-badge);
-  border-radius: 24px;
-  padding: 8px 12px;
-  box-shadow: var(--shadow-dock);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar-btn {
-  background: transparent;
-  border: 2px solid transparent;
-  border-radius: 18px;
-  padding: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.avatar-btn:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.avatar-btn.active {
-  border-color: #2563eb;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-}
-
-.avatar-preview {
-  width: 44px;
-  height: 38px;
-  display: block;
-}
-
-/* The lower nav pill bar */
-.dock-nav-bar {
-  background: var(--bg-glass);
-  backdrop-filter: var(--bg-glass-blur);
-  border: 1px solid var(--border-badge);
-  border-radius: 999px;
-  padding: 6px 16px;
-  box-shadow: var(--shadow-badge);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.dock-nav-btn {
-  background: transparent;
-  border: none;
-  color: #475569;
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.15s ease;
-}
-
-.dock-nav-btn:hover {
-  color: #0f172a;
+.callout-sub {
+  font-size: 0.70rem;
+  color: var(--text-sub);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.1px;
 }
 
 /* ==========================================================================
-   SPATIAL TOOLTIP
+   MINIMAL SPATIAL TOOLTIP
    ========================================================================== */
 .spatial-tooltip {
   position: absolute;
   pointer-events: none;
   z-index: 40;
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  border-radius: 14px;
-  padding: 10px 14px;
-  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 0 1px 1px rgba(15, 23, 42, 0.05);
-  transform: translate(-50%, -100%) translateY(-14px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.1), 0 0 1px 1px rgba(15, 23, 42, 0.04);
+  transform: translate(-50%, -100%) translateY(-12px);
   opacity: 0;
   transition: opacity 0.12s ease, transform 0.12s ease;
-  min-width: 170px;
+  min-width: 150px;
 }
 
 .spatial-tooltip.visible {
   opacity: 1;
-  transform: translate(-50%, -100%) translateY(-8px);
+  transform: translate(-50%, -100%) translateY(-6px);
 }
 
 .tooltip-title {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-dark);
 }
 
 .tooltip-meta {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: #2563eb;
   font-family: var(--font-mono);
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .tooltip-desc {
-  font-size: 0.72rem;
+  font-size: 0.70rem;
   color: #64748b;
-  margin-top: 4px;
-  line-height: 1.35;
+  margin-top: 3px;
+  line-height: 1.3;
 }

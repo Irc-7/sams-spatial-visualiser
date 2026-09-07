@@ -1,7 +1,7 @@
 /**
- * SAMS Spatial Agentic Visualiser - HUD Overlay & Floating Station Badges
- * Floating frosted station tags: Vault, Whiteboard, Kanban Wall, Desk 01, Security Gate.
- * Top-left pill brand logo and real-time metrics.
+ * SAMS Spatial Agentic Visualiser - Floating Job Callouts & Workspace Labels
+ * Minimalist, precision floating badges indicating each robot's specific job & station.
+ * Zero titles, zero logos, zero headers - pure workspace diorama.
  */
 
 export class HUDOverlay {
@@ -19,42 +19,12 @@ export class HUDOverlay {
   }
 
   createDom() {
-    // 1. Top-Left Brand Logo (Blue Pill with Two White Eyes)
-    this.brandLogo = document.createElement('div');
-    this.brandLogo.className = 'brand-pill-logo';
-    this.brandLogo.innerHTML = `
-      <div class="logo-eye-icon">
-        <div class="logo-dot"></div>
-        <div class="logo-dot"></div>
-      </div>
-      <div>
-        <span class="brand-text">SAMS</span>
-        <span class="brand-badge-mini">WORKSPACE</span>
-      </div>
-    `;
-    this.root.appendChild(this.brandLogo);
-
-    // 2. Top-Right Metrics Pill
-    this.topMetrics = document.createElement('div');
-    this.topMetrics.className = 'top-metrics';
-    this.topMetrics.innerHTML = `
-      <div class="metric-card">
-        <div class="metric-dot" id="metricConnDot"></div>
-        <span id="metricConnText">ONLINE</span>
-      </div>
-      <div class="metric-card">
-        <span>FPS:</span>
-        <span id="metricFpsText">60</span>
-      </div>
-    `;
-    this.root.appendChild(this.topMetrics);
-
-    // 3. Floating Station Badges Container
+    // Floating Station / Job Badges Container
     this.badgesLayer = document.createElement('div');
     this.badgesLayer.id = 'floating-badges-layer';
     this.root.appendChild(this.badgesLayer);
 
-    // 4. Spatial Tooltip
+    // Minimal Hover Tooltip
     this.tooltip = document.createElement('div');
     this.tooltip.className = 'spatial-tooltip';
     this.tooltip.innerHTML = `
@@ -64,75 +34,91 @@ export class HUDOverlay {
     `;
     this.root.appendChild(this.tooltip);
 
-    this.initStationBadges();
+    this.initJobCallouts();
   }
 
-  initStationBadges() {
-    const stations = [
+  initJobCallouts() {
+    // The exact 5 workstation jobs from the reference infographic
+    const stationJobs = [
+      {
+        id: 'desk_01',
+        name: 'Desk 01',
+        subtitle: 'Active Compute',
+        dotColor: '#2563eb', // Blue dot
+        iconSvg: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`,
+        gridX: 4.4,
+        gridY: 5.6,
+        elevation: 64
+      },
       {
         id: 'vault',
-        label: 'Vault',
-        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+        name: 'Vault',
+        subtitle: 'Secure Storage',
+        dotColor: '#10b981', // Green dot
+        iconSvg: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
         gridX: 0.8,
         gridY: 2.5,
-        elevation: 62
+        elevation: 64
       },
       {
         id: 'whiteboard',
-        label: 'Whiteboard',
-        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><line x1="8" y1="2" x2="8" y2="4"></line><line x1="16" y1="2" x2="16" y2="4"></line></svg>`,
+        name: 'Whiteboard',
+        subtitle: 'Plans & Architecture',
+        dotColor: '#f97316', // Orange dot
+        iconSvg: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><line x1="8" y1="2" x2="8" y2="4"></line><line x1="16" y1="2" x2="16" y2="4"></line></svg>`,
         gridX: 4.2,
         gridY: 0.5,
         elevation: 74
       },
       {
         id: 'kanban_wall',
-        label: 'Kanban Wall',
-        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>`,
+        name: 'Kanban Wall',
+        subtitle: 'Work Items',
+        dotColor: '#f97316', // Orange dot
+        iconSvg: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>`,
         gridX: 7.8,
         gridY: 0.3,
         elevation: 78
       },
       {
-        id: 'desk_01',
-        label: 'Desk 01',
-        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`,
-        gridX: 4.4,
-        gridY: 5.6,
-        elevation: 58
-      },
-      {
         id: 'security_gate',
-        label: 'Security Gate',
-        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+        name: 'Security Gate',
+        subtitle: 'Access Control',
+        dotColor: '#10b981', // Green dot
+        iconSvg: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
         gridX: 8.6,
         gridY: 5.2,
-        elevation: 48
+        elevation: 50
       }
     ];
 
-    stations.forEach(st => {
+    stationJobs.forEach(job => {
       const el = document.createElement('div');
-      el.className = 'floating-badge';
-      el.dataset.stationId = st.id;
+      el.className = 'job-callout-pill';
+      el.dataset.stationId = job.id;
       el.innerHTML = `
-        <span class="badge-icon">${st.iconSvg}</span>
-        <span class="badge-label">${st.label}</span>
+        <span class="callout-dot" style="background:${job.dotColor};"></span>
+        <span class="callout-icon">${job.iconSvg}</span>
+        <div class="callout-texts">
+          <span class="callout-name">${job.name}</span>
+          <span class="callout-sep">/</span>
+          <span class="callout-sub">${job.subtitle}</span>
+        </div>
       `;
 
       el.addEventListener('click', () => {
         if (this.callbacks.onStationSelect) {
-          this.callbacks.onStationSelect(st.id);
+          this.callbacks.onStationSelect(job.id);
         }
       });
 
       this.badgesLayer.appendChild(el);
-      this.badges.set(st.id, { el, config: st });
+      this.badges.set(job.id, { el, config: job });
     });
   }
 
   /**
-   * Updates floating badge positions in viewport screen coordinates.
+   * Syncs floating badge positions in viewport screen coordinates.
    * @param {import('../core/IsometricEngine.js').IsometricEngine} engine
    * @param {import('../core/Camera.js').Camera} camera
    */
@@ -141,27 +127,12 @@ export class HUDOverlay {
       const st = item.config;
       const worldPos = engine.gridToScreen(st.gridX, st.gridY, 0);
 
-      // Apply camera transformation to find client screen coordinates
       const screenX = worldPos.x * camera.zoom + camera.x;
       const screenY = (worldPos.y - st.elevation) * camera.zoom + camera.y;
 
       item.el.style.left = `${Math.round(screenX)}px`;
       item.el.style.top = `${Math.round(screenY)}px`;
     });
-  }
-
-  setFps(fps) {
-    const el = document.getElementById('metricFpsText');
-    if (el) el.textContent = Math.round(fps).toString();
-  }
-
-  setConnectionStatus(state, text) {
-    const txt = document.getElementById('metricConnText');
-    const dot = document.getElementById('metricConnDot');
-    if (txt) txt.textContent = text || state.toUpperCase();
-    if (dot) {
-      dot.style.background = (state === 'connected') ? '#10b981' : '#38bdf8';
-    }
   }
 
   showTooltip(clientX, clientY, data) {
