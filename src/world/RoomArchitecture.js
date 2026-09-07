@@ -11,7 +11,7 @@ export class RoomArchitecture {
   constructor(engine, options = {}) {
     this.engine = engine;
     this.gridSize = options.gridSize || 12; // 12x12 tiles
-    this.wallHeight = options.wallHeight || 64; // Cutaway perimeter wall height in px
+    this.wallHeight = options.wallHeight || 88; // Cutaway perimeter wall height (realistic ~3m architectural scale)
     this.showGridLines = options.showGridLines !== false;
 
     // Palette tokens for architectural rendering

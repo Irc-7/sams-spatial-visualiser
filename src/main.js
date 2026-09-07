@@ -35,9 +35,9 @@ class SamsVisualiserApp {
     });
 
     this.camera = new Camera(this.canvas, {
-      zoom: 1.15,
-      minZoom: 0.45,
-      maxZoom: 2.8
+      zoom: 1.35,
+      minZoom: 0.5,
+      maxZoom: 3.2
     });
 
     // 3. World & Props
@@ -286,8 +286,8 @@ class SamsVisualiserApp {
       let foundAgent = null;
       for (const agent of this.agents.values()) {
         const agentScreen = this.engine.gridToScreen(agent.gridX, agent.gridY, agent.gridZ);
-        const dist = Math.hypot(worldPos.x - agentScreen.x, worldPos.y - (agentScreen.y - 30));
-        if (dist < 28) {
+        const dist = Math.hypot(worldPos.x - agentScreen.x, worldPos.y - (agentScreen.y - 18));
+        if (dist < 20) {
           foundAgent = agent;
           break;
         }
@@ -324,8 +324,8 @@ class SamsVisualiserApp {
 
       for (const agent of this.agents.values()) {
         const agentScreen = this.engine.gridToScreen(agent.gridX, agent.gridY, agent.gridZ);
-        const dist = Math.hypot(worldPos.x - agentScreen.x, worldPos.y - (agentScreen.y - 30));
-        if (dist < 32) {
+        const dist = Math.hypot(worldPos.x - agentScreen.x, worldPos.y - (agentScreen.y - 18));
+        if (dist < 24) {
           this.focusAgent(agent.id);
           break;
         }

@@ -47,7 +47,7 @@ export class RobotAgent {
     // Appearance & Coloring
     this.primaryColor = config.primaryColor || '#2563eb';
     this.darkColor = config.darkColor || '#1d4ed8';
-    this.scale = config.scale || 0.45; // Scales the 300x300 procedural rig to ~135px
+    this.scale = config.scale || 0.24; // Real-world chibi architectural scale (~42px height)
 
     // Visor State Machine
     this.visor = new VisorStateMachine(config.initialState || VISOR_STATES.IDLE);
@@ -311,24 +311,24 @@ export class RobotAgent {
    */
   renderOverheadBadge(ctx, x, y) {
     const tagText = this.name.toUpperCase();
-    ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+    ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
     const textW = ctx.measureText(tagText).width;
-    const badgeW = Math.max(textW + 24, 70);
-    const badgeH = 26;
+    const badgeW = Math.max(textW + 20, 58);
+    const badgeH = 22;
 
     // Badge Pill Box
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
     ctx.beginPath();
-    ctx.roundRect(x - badgeW / 2, y - badgeH / 2, badgeW, badgeH, 13);
+    ctx.roundRect(x - badgeW / 2, y - badgeH / 2, badgeW, badgeH, 11);
     ctx.fill();
 
     // Status Indicator Dot
     const cfg = this.visor.getConfig();
     ctx.fillStyle = cfg.color;
     ctx.shadowColor = cfg.color;
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 4;
     ctx.beginPath();
-    ctx.arc(x - badgeW / 2 + 12, y, 4, 0, Math.PI * 2);
+    ctx.arc(x - badgeW / 2 + 10, y, 3.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
 
@@ -336,6 +336,6 @@ export class RobotAgent {
     ctx.fillStyle = '#f8fafc';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(tagText, x - badgeW / 2 + 20, y);
+    ctx.fillText(tagText, x - badgeW / 2 + 18, y);
   }
 }
