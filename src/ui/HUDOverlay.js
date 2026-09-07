@@ -1,218 +1,180 @@
 /**
- * SAMS Spatial Agentic Visualiser - HUD Overlay
- * Telemetry HUD metrics, station spatial tooltips, and real-time event feed.
+ * SAMS Spatial Agentic Visualiser - HUD Overlay & Floating Station Badges
+ * Floating frosted station tags: Vault, Whiteboard, Kanban Wall, Desk 01, Security Gate.
+ * Top-left pill brand logo and real-time metrics.
  */
 
 export class HUDOverlay {
   /**
    * @param {HTMLElement} rootContainer
    * @param {Object} [callbacks]
-   * @param {Function} [callbacks.onAgentSelect]
+   * @param {Function} [callbacks.onStationSelect]
    */
   constructor(rootContainer, callbacks = {}) {
     this.root = rootContainer;
     this.callbacks = callbacks;
-    this.eventsHistory = [];
-    this.maxHistory = 15;
+    this.badges = new Map();
 
     this.createDom();
   }
 
-  /**
-   * Builds the DOM structure for HUD elements.
-   */
   createDom() {
-    // 1. Top HUD Bar
-    this.topBar = document.createElement('header');
-    this.topBar.className = 'hud-topbar';
-    this.topBar.innerHTML = `
-      <div class="hud-brand">
-        <div class="brand-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-            <polyline points="2 17 12 22 22 17"></polyline>
-            <polyline points="2 12 12 17 22 12"></polyline>
-          </svg>
-        </div>
-        <div>
-          <div class="brand-title">
-            SAMS SPATIAL VISUALISER
-            <span class="brand-badge">2D-ISO</span>
-          </div>
-          <div class="brand-sub">Autonomous Multi-Agent Workspace</div>
-        </div>
+    // 1. Top-Left Brand Logo (Blue Pill with Two White Eyes)
+    this.brandLogo = document.createElement('div');
+    this.brandLogo.className = 'brand-pill-logo';
+    this.brandLogo.innerHTML = `
+      <div class="logo-eye-icon">
+        <div class="logo-dot"></div>
+        <div class="logo-dot"></div>
       </div>
-
-      <div class="hud-metrics">
-        <div class="metric-pill" id="metricConnection">
-          <div class="metric-dot mock" id="connDot"></div>
-          <span class="metric-label">TRANSPORT:</span>
-          <span class="metric-value" id="connText">STANDBY</span>
-        </div>
-
-        <div class="metric-pill">
-          <span class="metric-label">AGENTS:</span>
-          <span class="metric-value" id="activeAgentsCount">0/0</span>
-        </div>
-
-        <div class="metric-pill">
-          <span class="metric-label">FPS:</span>
-          <span class="metric-value" id="fpsCounter">60</span>
-        </div>
+      <div>
+        <span class="brand-text">SAMS</span>
+        <span class="brand-badge-mini">WORKSPACE</span>
       </div>
     `;
-    this.root.appendChild(this.topBar);
+    this.root.appendChild(this.brandLogo);
 
-    // 2. Left Telemetry Feed
-    this.feedContainer = document.createElement('aside');
-    this.feedContainer.className = 'hud-telemetry-feed';
-    this.feedContainer.innerHTML = `
-      <div class="telemetry-header">
-        <div class="telemetry-title">
-          <div class="pulse-indicator"></div>
-          Agent Stream Telemetry
-        </div>
-        <span class="brand-badge" id="feedCount">0 EVT</span>
+    // 2. Top-Right Metrics Pill
+    this.topMetrics = document.createElement('div');
+    this.topMetrics.className = 'top-metrics';
+    this.topMetrics.innerHTML = `
+      <div class="metric-card">
+        <div class="metric-dot" id="metricConnDot"></div>
+        <span id="metricConnText">ONLINE</span>
       </div>
-      <div class="telemetry-list" id="telemetryList"></div>
+      <div class="metric-card">
+        <span>FPS:</span>
+        <span id="metricFpsText">60</span>
+      </div>
     `;
-    this.root.appendChild(this.feedContainer);
+    this.root.appendChild(this.topMetrics);
 
-    // 3. Spatial Tooltip Element
+    // 3. Floating Station Badges Container
+    this.badgesLayer = document.createElement('div');
+    this.badgesLayer.id = 'floating-badges-layer';
+    this.root.appendChild(this.badgesLayer);
+
+    // 4. Spatial Tooltip
     this.tooltip = document.createElement('div');
     this.tooltip.className = 'spatial-tooltip';
     this.tooltip.innerHTML = `
-      <div class="tooltip-title" id="ttTitle">Workstation</div>
-      <div class="tooltip-meta" id="ttMeta">Zone 01</div>
-      <div class="tooltip-desc" id="ttDesc">Station description</div>
+      <div class="tooltip-title" id="ttTitle">Station</div>
+      <div class="tooltip-meta" id="ttMeta">Zone</div>
+      <div class="tooltip-desc" id="ttDesc">Description</div>
     `;
     this.root.appendChild(this.tooltip);
 
-    this.cacheElements();
+    this.initStationBadges();
   }
 
-  /**
-   * Caches commonly referenced element handles.
-   */
-  cacheElements() {
-    this.connDot = this.topBar.querySelector('#connDot');
-    this.connText = this.topBar.querySelector('#connText');
-    this.activeAgentsCount = this.topBar.querySelector('#activeAgentsCount');
-    this.fpsCounter = this.topBar.querySelector('#fpsCounter');
-    this.feedList = this.feedContainer.querySelector('#telemetryList');
-    this.feedCount = this.feedContainer.querySelector('#feedCount');
-    this.ttTitle = this.tooltip.querySelector('#ttTitle');
-    this.ttMeta = this.tooltip.querySelector('#ttMeta');
-    this.ttDesc = this.tooltip.querySelector('#ttDesc');
-  }
-
-  /**
-   * Updates network indicator status.
-   * @param {string} state - 'connected' | 'connecting' | 'fallback_mock' | 'disconnected'
-   * @param {string} [label]
-   */
-  setConnectionStatus(state, label) {
-    if (!this.connDot || !this.connText) return;
-    this.connDot.className = 'metric-dot';
-
-    if (state === 'connected') {
-      this.connDot.classList.add('connected');
-      this.connText.textContent = label || 'LIVE WS';
-    } else if (state === 'connecting') {
-      this.connDot.classList.add('connecting');
-      this.connText.textContent = 'CONNECTING';
-    } else if (state === 'fallback_mock') {
-      this.connDot.classList.add('mock');
-      this.connText.textContent = 'MOCK TELEMETRY';
-    } else {
-      this.connText.textContent = 'OFFLINE';
-    }
-  }
-
-  /**
-   * Updates agent count counters in HUD.
-   * @param {number} active
-   * @param {number} total
-   */
-  setAgentCounts(active, total) {
-    if (this.activeAgentsCount) {
-      this.activeAgentsCount.textContent = `${active}/${total}`;
-    }
-  }
-
-  /**
-   * Updates FPS reading.
-   * @param {number} fps
-   */
-  setFps(fps) {
-    if (this.fpsCounter) {
-      this.fpsCounter.textContent = Math.round(fps).toString();
-    }
-  }
-
-  /**
-   * Pushes a new telemetry event into the feed list.
-   * @param {Object} event
-   */
-  pushTelemetryEvent(event) {
-    this.eventsHistory.unshift(event);
-    if (this.eventsHistory.length > this.maxHistory) {
-      this.eventsHistory.pop();
-    }
-
-    if (this.feedCount) {
-      this.feedCount.textContent = `${this.eventsHistory.length} EVT`;
-    }
-
-    if (!this.feedList) return;
-
-    const itemEl = document.createElement('div');
-    itemEl.className = 'telemetry-item';
-    const stateClass = `state-${event.state || 'idle'}`;
-
-    itemEl.innerHTML = `
-      <div class="telemetry-item-top">
-        <span class="agent-tag">${event.agent_id}</span>
-        <span class="state-badge ${stateClass}">${event.state}</span>
-      </div>
-      <div class="task-desc" title="${event.task_summary}">${event.task_summary}</div>
-      <div class="task-zone">📍 ${event.target_zone}</div>
-    `;
-
-    itemEl.addEventListener('click', () => {
-      if (this.callbacks.onAgentSelect) {
-        this.callbacks.onAgentSelect(event.agent_id);
+  initStationBadges() {
+    const stations = [
+      {
+        id: 'vault',
+        label: 'Vault',
+        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+        gridX: 0.8,
+        gridY: 2.5,
+        elevation: 62
+      },
+      {
+        id: 'whiteboard',
+        label: 'Whiteboard',
+        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><line x1="8" y1="2" x2="8" y2="4"></line><line x1="16" y1="2" x2="16" y2="4"></line></svg>`,
+        gridX: 4.2,
+        gridY: 0.5,
+        elevation: 74
+      },
+      {
+        id: 'kanban_wall',
+        label: 'Kanban Wall',
+        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>`,
+        gridX: 7.8,
+        gridY: 0.3,
+        elevation: 78
+      },
+      {
+        id: 'desk_01',
+        label: 'Desk 01',
+        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`,
+        gridX: 4.4,
+        gridY: 5.6,
+        elevation: 58
+      },
+      {
+        id: 'security_gate',
+        label: 'Security Gate',
+        iconSvg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+        gridX: 8.6,
+        gridY: 5.2,
+        elevation: 48
       }
+    ];
+
+    stations.forEach(st => {
+      const el = document.createElement('div');
+      el.className = 'floating-badge';
+      el.dataset.stationId = st.id;
+      el.innerHTML = `
+        <span class="badge-icon">${st.iconSvg}</span>
+        <span class="badge-label">${st.label}</span>
+      `;
+
+      el.addEventListener('click', () => {
+        if (this.callbacks.onStationSelect) {
+          this.callbacks.onStationSelect(st.id);
+        }
+      });
+
+      this.badgesLayer.appendChild(el);
+      this.badges.set(st.id, { el, config: st });
     });
-
-    this.feedList.prepend(itemEl);
-
-    // Prune DOM nodes
-    while (this.feedList.children.length > this.maxHistory) {
-      this.feedList.removeChild(this.feedList.lastChild);
-    }
   }
 
   /**
-   * Shows or repositions spatial tooltip at client screen coordinates.
-   * @param {number} clientX
-   * @param {number} clientY
-   * @param {Object} data
+   * Updates floating badge positions in viewport screen coordinates.
+   * @param {import('../core/IsometricEngine.js').IsometricEngine} engine
+   * @param {import('../core/Camera.js').Camera} camera
    */
+  updateBadgePositions(engine, camera) {
+    this.badges.forEach((item) => {
+      const st = item.config;
+      const worldPos = engine.gridToScreen(st.gridX, st.gridY, 0);
+
+      // Apply camera transformation to find client screen coordinates
+      const screenX = worldPos.x * camera.zoom + camera.x;
+      const screenY = (worldPos.y - st.elevation) * camera.zoom + camera.y;
+
+      item.el.style.left = `${Math.round(screenX)}px`;
+      item.el.style.top = `${Math.round(screenY)}px`;
+    });
+  }
+
+  setFps(fps) {
+    const el = document.getElementById('metricFpsText');
+    if (el) el.textContent = Math.round(fps).toString();
+  }
+
+  setConnectionStatus(state, text) {
+    const txt = document.getElementById('metricConnText');
+    const dot = document.getElementById('metricConnDot');
+    if (txt) txt.textContent = text || state.toUpperCase();
+    if (dot) {
+      dot.style.background = (state === 'connected') ? '#10b981' : '#38bdf8';
+    }
+  }
+
   showTooltip(clientX, clientY, data) {
     if (!this.tooltip) return;
-    this.ttTitle.textContent = data.title || 'Target';
-    this.ttMeta.textContent = data.meta || '';
-    this.ttDesc.textContent = data.desc || '';
+    this.tooltip.querySelector('#ttTitle').textContent = data.title;
+    this.tooltip.querySelector('#ttMeta').textContent = data.meta;
+    this.tooltip.querySelector('#ttDesc').textContent = data.desc;
 
     this.tooltip.style.left = `${clientX}px`;
     this.tooltip.style.top = `${clientY}px`;
     this.tooltip.classList.add('visible');
   }
 
-  /**
-   * Hides spatial tooltip.
-   */
   hideTooltip() {
     if (this.tooltip) {
       this.tooltip.classList.remove('visible');

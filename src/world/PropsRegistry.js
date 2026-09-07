@@ -1,8 +1,12 @@
 /**
  * SAMS Spatial Agentic Visualiser - Props Registry
- * Real-world architectural proportions for 12x12 isometric workspace.
- * Workstations, 42U server racks, 96" whiteboard/kanban, ultrawide compute pods,
- * sectional biophilic lounge, and optical laser turnstiles.
+ * Pixel-precise recreation of reference diorama props:
+ * 1. Potted Plant & Lounge Armchair with Side Table
+ * 2. Industrial Heavy Steel Vault Safe
+ * 3. Mobile Whiteboard with Architecture Flowchart on Wheels
+ * 4. Wall-Mounted 4-Column Sprint Kanban Board
+ * 5. Security Turnstile Gate with RFID Scanner
+ * 6. Desk 01: Warm Wooden Desk with Dual Green-Code Monitors, Drawers, Succulent & Chair
  */
 
 export class PropsRegistry {
@@ -12,72 +16,85 @@ export class PropsRegistry {
   constructor(engine) {
     this.engine = engine;
 
-    // Define all static and interactive props with true architectural footprint
     this.props = [
-      // 1. Secure Vault & Server Enclave (Grid 1.2, 1.2)
+      // 1. Potted Houseplant (Far-left corner)
       {
-        id: 'prop_vault_servers',
-        type: 'vault_enclave',
-        gridX: 1.3,
-        gridY: 1.3,
-        gridZ: 0.25,
-        label: 'Air-Gapped Vault 42U Core',
-        render: (ctx, screenPos, t) => this.renderVaultEnclave(ctx, screenPos, t)
+        id: 'prop_corner_plant',
+        type: 'decoration',
+        gridX: 0.6,
+        gridY: 8.8,
+        gridZ: 0,
+        render: (ctx, pos, t) => this.renderCornerPlant(ctx, pos, t)
       },
 
-      // 2. Strategy Wall & Sprint Kanban (Wall on Y=0, X=8.5)
+      // 2. Lounge Armchair & Pedestal Side Table
       {
-        id: 'prop_strategy_kanban',
-        type: 'strategy_wall',
-        gridX: 8.5,
-        gridY: 0.1,
-        gridZ: 0.0,
-        label: 'Strategy & Sprint Wall (96")',
-        render: (ctx, screenPos, t) => this.renderStrategyWall(ctx, screenPos, t)
+        id: 'prop_lounge_armchair',
+        type: 'lounge',
+        gridX: 1.0,
+        gridY: 6.8,
+        gridZ: 0,
+        render: (ctx, pos, t) => this.renderLoungeArmchair(ctx, pos, t)
       },
 
-      // 3. Compute Pod A (Island 1: X=3, Y=5)
+      // 3. The Heavy Steel Safe / Vault (Back-left wall)
       {
-        id: 'prop_compute_pod_a',
-        type: 'compute_island',
-        gridX: 3.0,
-        gridY: 5.0,
-        gridZ: 0.0,
-        podName: 'POD ALPHA',
-        accentColor: '#38bdf8',
-        render: (ctx, screenPos, t) => this.renderComputeIsland(ctx, screenPos, t, '#38bdf8', 'POD ALPHA')
+        id: 'prop_vault_safe',
+        type: 'vault',
+        gridX: 0.8,
+        gridY: 2.5,
+        gridZ: 0,
+        badgeLabel: 'Vault',
+        badgeIcon: 'shield',
+        render: (ctx, pos, t) => this.renderVaultSafe(ctx, pos, t)
       },
 
-      // 3b. Compute Pod B (Island 2: X=5, Y=7)
+      // 4. Mobile Whiteboard on Casters with Architecture Flowchart (Back wall center)
       {
-        id: 'prop_compute_pod_b',
-        type: 'compute_island',
-        gridX: 5.0,
-        gridY: 7.0,
-        gridZ: 0.0,
-        podName: 'POD BETA',
-        accentColor: '#a855f7',
-        render: (ctx, screenPos, t) => this.renderComputeIsland(ctx, screenPos, t, '#a855f7', 'POD BETA')
+        id: 'prop_mobile_whiteboard',
+        type: 'whiteboard',
+        gridX: 4.2,
+        gridY: 0.5,
+        gridZ: 0,
+        badgeLabel: 'Whiteboard',
+        badgeIcon: 'board',
+        render: (ctx, pos, t) => this.renderMobileWhiteboard(ctx, pos, t)
       },
 
-      // 4. Biophilic Breakout Lounge (X=2.5, Y=10)
+      // 5. Kanban Wall with Sticky Notes (Back wall right)
       {
-        id: 'prop_lounge_sectional',
-        type: 'biophilic_lounge',
-        gridX: 2.5,
-        gridY: 10.0,
-        gridZ: 0.0,
-        render: (ctx, screenPos, t) => this.renderBiophilicLounge(ctx, screenPos, t)
+        id: 'prop_kanban_wall',
+        type: 'kanban_wall',
+        gridX: 7.8,
+        gridY: 0.3,
+        gridZ: 0,
+        badgeLabel: 'Kanban Wall',
+        badgeIcon: 'grid',
+        render: (ctx, pos, t) => this.renderKanbanWall(ctx, pos, t)
       },
 
-      // 5. Perimeter Turnstile Gates (X=10, Y=10)
+      // 6. Security Turnstile Gate (Right entry zone)
       {
-        id: 'prop_perimeter_turnstiles',
-        type: 'perimeter_gates',
-        gridX: 10.0,
-        gridY: 10.0,
-        gridZ: 0.0,
-        render: (ctx, screenPos, t) => this.renderPerimeterTurnstiles(ctx, screenPos, t)
+        id: 'prop_security_gate',
+        type: 'security_gate',
+        gridX: 8.6,
+        gridY: 5.2,
+        gridZ: 0,
+        badgeLabel: 'Security Gate',
+        badgeIcon: 'lock',
+        render: (ctx, pos, t) => this.renderSecurityGate(ctx, pos, t)
+      },
+
+      // 7. Desk 01 Workstation: Wooden Desk + Dual Monitors + Ergonomic Chair
+      {
+        id: 'prop_desk_01',
+        type: 'desk_01',
+        gridX: 4.4,
+        gridY: 5.6,
+        gridZ: 0,
+        badgeLabel: 'Desk 01',
+        badgeIcon: 'monitor',
+        render: (ctx, pos, t) => this.renderDesk01(ctx, pos, t)
       }
     ];
   }
@@ -87,488 +104,547 @@ export class PropsRegistry {
   }
 
   // =========================================================================
-  // 1. SECURE VAULT & 42U SERVER RACK ENCLAVE (True 2.0m height proportion)
+  // 1. POTTED HOUSEPLANT (Far left corner)
   // =========================================================================
-  renderVaultEnclave(ctx, pos, t) {
-    // A. 42U Server Racks (Massive industrial data center cabinets)
-    const rackW = 32;
-    const rackH = 82; // 2.0m scale in relation to 40px chibi robot
-    const rackD = 18;
-
-    // Rack 1 (Left Rack Cabinet)
-    const r1X = pos.x - 30;
-    const r1Y = pos.y - 10;
-
-    // Shadow
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+  renderCornerPlant(ctx, pos, t) {
+    // Floor shadow
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.2)';
     ctx.beginPath();
-    ctx.ellipse(r1X + 12, r1Y + 16, 32, 14, 0, 0, Math.PI * 2);
+    ctx.ellipse(pos.x, pos.y + 4, 14, 7, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cabinet Main Chassis (Beveled 3D isometric box)
-    ctx.fillStyle = '#0b0f19'; // Ultra dark server chassis
-    ctx.beginPath();
-    ctx.roundRect(r1X - 16, r1Y - rackH, rackW, rackH, [5, 5, 0, 0]);
-    ctx.fill();
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1.8;
-    ctx.stroke();
-
-    // Top Exhaust Fan Grill
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(r1X - 14, r1Y - rackH + 4, rackW - 4, 6);
-
-    // 42U Blade server slots (10 visible enterprise units)
-    for (let i = 0; i < 9; i++) {
-      const slotY = r1Y - rackH + 13 + i * 7.2;
-      ctx.fillStyle = (i % 2 === 0) ? '#111827' : '#1f2937';
-      ctx.fillRect(r1X - 13, slotY, rackW - 6, 5.5);
-
-      // Server activity LEDs & drive caddies
-      const blinkA = Math.sin(t * 8 + i * 2) > 0;
-      const blinkB = Math.cos(t * 11 + i * 1.5) > 0.2;
-      ctx.fillStyle = blinkA ? '#38bdf8' : '#0369a1';
-      ctx.fillRect(r1X - 11, slotY + 1.5, 2.5, 2);
-      ctx.fillStyle = blinkB ? '#10b981' : '#047857';
-      ctx.fillRect(r1X - 6, slotY + 1.5, 2.5, 2);
-
-      // Mini drive bay latch
-      ctx.fillStyle = '#475569';
-      ctx.fillRect(r1X + 2, slotY + 1.5, 9, 2);
-    }
-
-    // Rack 2 (Right Rack Cabinet)
-    const r2X = pos.x + 12;
-    const r2Y = pos.y - 2;
-
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
-    ctx.beginPath();
-    ctx.ellipse(r2X + 12, r2Y + 16, 32, 14, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#0b0f19';
-    ctx.beginPath();
-    ctx.roundRect(r2X - 16, r2Y - rackH, rackW, rackH, [5, 5, 0, 0]);
-    ctx.fill();
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = 1.8;
-    ctx.stroke();
-
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(r2X - 14, r2Y - rackH + 4, rackW - 4, 6);
-
-    for (let i = 0; i < 9; i++) {
-      const slotY = r2Y - rackH + 13 + i * 7.2;
-      ctx.fillStyle = (i % 2 === 0) ? '#111827' : '#1f2937';
-      ctx.fillRect(r2X - 13, slotY, rackW - 6, 5.5);
-
-      const blink = Math.sin(t * 10 + i * 1.2) > 0;
-      ctx.fillStyle = blink ? '#38bdf8' : '#0c4a6e';
-      ctx.fillRect(r2X - 11, slotY + 1.5, 2.5, 2);
-      ctx.fillStyle = (t % 1 > 0.4) ? '#ef4444' : '#7f1d1d';
-      ctx.fillRect(r2X - 6, slotY + 1.5, 2.5, 2);
-
-      ctx.fillStyle = '#475569';
-      ctx.fillRect(r2X + 2, slotY + 1.5, 9, 2);
-    }
-
-    // Overhead Cable Conduit Ladder
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(r1X, r1Y - rackH - 4);
-    ctx.lineTo(r2X + 16, r2Y - rackH - 4);
-    ctx.stroke();
-
-    // B. Architectural Glass Partition Enclosure
-    ctx.save();
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-    ctx.lineWidth = 1.5;
-
-    // Glass panel boundary
-    ctx.beginPath();
-    ctx.moveTo(pos.x - 52, pos.y - 75);
-    ctx.lineTo(pos.x + 36, pos.y - 32);
-    ctx.lineTo(pos.x + 36, pos.y + 18);
-    ctx.lineTo(pos.x - 52, pos.y - 25);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Aluminium Anodized Corner Columns
-    ctx.fillStyle = '#64748b';
-    ctx.fillRect(pos.x - 54, pos.y - 28, 4, 46);
-    ctx.fillRect(pos.x + 34, pos.y + 16, 4, 4);
-
-    // Neon Accent Line along base of glass
-    ctx.strokeStyle = '#0284c7';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(pos.x - 52, pos.y - 25);
-    ctx.lineTo(pos.x + 36, pos.y + 18);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  // =========================================================================
-  // 2. STRATEGY WALL & SPRINT KANBAN (96" Whiteboard: 2.4m architectural scale)
-  // =========================================================================
-  renderStrategyWall(ctx, pos, t) {
-    const wbW = 126; // Spans nearly 3 tiles wide
-    const wbH = 58;  // Real-world 1.2m height
-    const wbX = pos.x - wbW / 2;
-    const wbY = pos.y - 82;
-
-    // Board Drop Shadow on cutaway wall
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.25)';
-    ctx.fillRect(wbX + 4, wbY + 4, wbW, wbH);
-
-    // Brushed Aluminum Frame
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillRect(wbX, wbY, wbW, wbH);
-
-    // Porcelain Gloss Whiteboard Surface
+    // White ceramic cylindrical pot
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(wbX + 3, wbY + 3, wbW - 6, wbH - 6);
-
-    // Title Header Strip
-    ctx.fillStyle = '#0284c7';
-    ctx.fillRect(wbX + 6, wbY + 6, 44, 4);
-
-    // 4-Column Sprint Kanban Board Layout (Backlog, Doing, Testing, Done)
-    const colW = (wbW - 16) / 4;
-    const colHeaders = ['#f87171', '#fbbf24', '#60a5fa', '#34d399'];
-
-    for (let c = 0; c < 4; c++) {
-      const cx = wbX + 8 + c * colW;
-      // Column title line
-      ctx.fillStyle = colHeaders[c];
-      ctx.fillRect(cx, wbY + 13, colW - 3, 2.5);
-
-      // Kanban Sticky Notes
-      const numCards = (c === 1 || c === 2) ? 4 : 3;
-      for (let k = 0; k < numCards; k++) {
-        const ky = wbY + 18 + k * 8.5;
-        ctx.fillStyle = (k % 2 === 0) ? '#fef08a' : '#fed7aa';
-        ctx.fillRect(cx + 1, ky, colW - 5, 6.5);
-        // Note text lines
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(cx + 2.5, ky + 2, colW - 8, 1.2);
-        ctx.fillRect(cx + 2.5, ky + 4, colW - 12, 1);
-      }
-    }
-
-    // Architecture Diagram Sketch Lines (Right section)
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.rect(wbX + 10, wbY + wbH - 16, 22, 10);
-    ctx.rect(wbX + 42, wbY + wbH - 16, 22, 10);
-    ctx.moveTo(wbX + 32, wbY + wbH - 11);
-    ctx.lineTo(wbX + 42, wbY + wbH - 11);
-    ctx.stroke();
-
-    // Marker & Eraser Aluminum Tray at bottom
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(wbX + 12, wbY + wbH, wbW - 24, 3);
-    // Colorful dry-erase pens
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(wbX + 20, wbY + wbH - 1, 8, 2);
-    ctx.fillStyle = '#2563eb'; ctx.fillRect(wbX + 30, wbY + wbH - 1, 8, 2);
-    ctx.fillStyle = '#10b981'; ctx.fillRect(wbX + 40, wbY + wbH - 1, 8, 2);
-  }
-
-  // =========================================================================
-  // 3. DUAL ISLAND COMPUTE PODS (1.8m x 1.2m Workstation Desk)
-  // =========================================================================
-  renderComputeIsland(ctx, pos, t, accentColor = '#38bdf8', podLabel = 'POD') {
-    // Floor Shadow
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
-    ctx.beginPath();
-    ctx.ellipse(pos.x, pos.y + 16, 56, 26, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Desk Height: 26px (standard ~75cm table height)
-    const deskH = 26;
-    const dy = pos.y - deskH;
-
-    // Heavy-duty Steel T-Leg Frames
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(pos.x - 42, dy + 8, 5, 26);
-    ctx.fillRect(pos.x + 38, dy + 8, 5, 26);
-    ctx.fillRect(pos.x, dy + 22, 5, 18);
-
-    // Desktop Workstation PC Case Tower under desk (with RGB illumination)
-    const pcX = pos.x + 22;
-    const pcY = dy + 10;
-    ctx.fillStyle = '#090d16';
-    ctx.fillRect(pcX, pcY, 14, 20);
-    ctx.strokeStyle = '#1e293b';
-    ctx.strokeRect(pcX, pcY, 14, 20);
-    // RGB strip inside PC case
-    ctx.fillStyle = accentColor;
-    ctx.shadowColor = accentColor;
-    ctx.shadowBlur = 6;
-    ctx.fillRect(pcX + 2, pcY + 4, 2, 12);
-    ctx.shadowBlur = 0;
-
-    // Full Workstation Desk Top Surface (Isometric Diamond Slab)
-    ctx.fillStyle = '#0f172a'; // Carbon fiber / slate desktop
-    ctx.beginPath();
-    ctx.moveTo(pos.x, dy - 18);
-    ctx.lineTo(pos.x + 48, dy + 6);
-    ctx.lineTo(pos.x, dy + 30);
-    ctx.lineTo(pos.x - 48, dy + 6);
-    ctx.closePath();
-    ctx.fill();
-
-    // Desk Perimeter Bevel & Accent LED Edge
-    ctx.strokeStyle = accentColor;
-    ctx.lineWidth = 1.6;
-    ctx.stroke();
-
-    // Ergonomic High-Back Mesh Chair (Sized realistically for 40px chibi)
-    const chairY = pos.y + 18;
-    ctx.fillStyle = '#0f172a'; // 5-star caster base
-    ctx.beginPath();
-    ctx.ellipse(pos.x, chairY + 2, 14, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Chair Seat Cushion
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.ellipse(pos.x, chairY - 6, 12, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // High-back Ergonomic Backrest & Headrest
-    ctx.fillStyle = '#334155';
-    ctx.beginPath();
-    ctx.roundRect(pos.x - 10, chairY - 26, 20, 18, 5);
-    ctx.fill();
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // 49" Curved Ultrawide Monitor (Mounted on heavy gas-spring monitor arm)
-    const monX = pos.x;
-    const monY = dy - 8;
-
-    // Monitor Arm & Base
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(monX - 3, monY + 2, 6, 10);
-    ctx.fillRect(monX - 10, monY + 11, 20, 3);
-
-    // Curved Monitor Screen Housing
-    const monW = 62;
-    const monH = 24;
-    ctx.fillStyle = '#020617';
-    ctx.beginPath();
-    ctx.roundRect(monX - monW / 2, monY - monH, monW, monH, 4);
-    ctx.fill();
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Animated Code Scanlines & IDE Buffer on Screen
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(monX - monW / 2 + 3, monY - monH + 2.5, monW - 6, monH - 5, 2);
-    ctx.clip();
-
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-    ctx.fill();
-
-    // Matrix/Code scan lines
-    const lineOffset = (t * 26) % 18;
-    ctx.fillStyle = accentColor;
-    for (let l = 0; l < 5; l++) {
-      const ly = (monY - monH + 4) + ((l * 4.5 + lineOffset) % (monH - 6));
-      const lw = 16 + ((l * 9) % (monW - 14));
-      ctx.fillRect(monX - monW / 2 + 5, ly, lw, 1.5);
-    }
-
-    // Mini activity pulse light in corner of monitor
-    ctx.fillStyle = accentColor;
-    ctx.shadowColor = accentColor;
-    ctx.shadowBlur = 8;
-    ctx.fillRect(monX + monW / 2 - 8, monY - monH + 5, 3.5, 3.5);
-    ctx.restore();
-
-    // Mechanical Keyboard & Deskmat
-    ctx.fillStyle = '#1e293b'; // Large deskmat
-    ctx.fillRect(pos.x - 22, dy + 6, 32, 12);
-    ctx.fillStyle = '#475569'; // Keyboard
-    ctx.fillRect(pos.x - 18, dy + 8, 20, 8);
-    // Mouse
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(pos.x + 4, dy + 9, 4, 6);
-  }
-
-  // =========================================================================
-  // 4. BIOPHILIC BREAKOUT LOUNGE (2.4m x 2.0m Sectional & Ceramic Flora)
-  // =========================================================================
-  renderBiophilicLounge(ctx, pos, t) {
-    // Floor Shadow
-    ctx.fillStyle = 'rgba(6, 78, 59, 0.3)';
-    ctx.beginPath();
-    ctx.ellipse(pos.x, pos.y + 18, 62, 28, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    const couchY = pos.y + 4;
-
-    // L-Shaped Sectional Sofa (Main Seating Bench)
-    ctx.fillStyle = '#064e3b'; // Deep emerald upholstery
-    ctx.beginPath();
-    ctx.roundRect(pos.x - 44, couchY - 16, 54, 30, 8);
-    ctx.fill();
-
-    // Plush Sofa Seat Cushions
-    ctx.fillStyle = '#047857';
-    ctx.beginPath();
-    ctx.roundRect(pos.x - 42, couchY - 12, 24, 22, 5);
-    ctx.roundRect(pos.x - 16, couchY - 12, 24, 22, 5);
-    ctx.fill();
-
-    // Sofa Backrest Cushions
-    ctx.fillStyle = '#065f46';
-    ctx.beginPath();
-    ctx.roundRect(pos.x - 44, couchY - 24, 54, 10, 5);
-    ctx.fill();
-
-    // Sectional Return Bench (L-Shape Return)
-    ctx.fillStyle = '#064e3b';
-    ctx.beginPath();
-    ctx.roundRect(pos.x - 44, couchY - 44, 26, 30, 7);
-    ctx.fill();
-
-    // White Carrera Marble Coffee Table
-    const tableX = pos.x + 22;
-    const tableY = pos.y + 6;
-    ctx.fillStyle = '#0f172a'; // Base shadow
-    ctx.beginPath();
-    ctx.ellipse(tableX, tableY + 10, 18, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Marble Tabletop
-    ctx.fillStyle = '#f8fafc';
-    ctx.beginPath();
-    ctx.ellipse(tableX, tableY + 2, 18, 9, 0, 0, Math.PI * 2);
+    ctx.roundRect(pos.x - 9, pos.y - 18, 18, 20, [2, 2, 6, 6]);
     ctx.fill();
     ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // Tech Tablet on Table
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(tableX - 6, tableY - 2, 8, 5);
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(tableX - 5, tableY - 1, 6, 3);
-
-    // Coffee Mug
-    ctx.fillStyle = '#0284c7';
+    // Pot soil
+    ctx.fillStyle = '#475569';
     ctx.beginPath();
-    ctx.arc(tableX + 6, tableY + 1, 2.5, 0, Math.PI * 2);
+    ctx.ellipse(pos.x, pos.y - 17, 8, 3, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Tall Ceramic Monstera Planter Pot (1.5m tall real scale)
-    const plantX = pos.x + 38;
-    const plantY = pos.y - 18;
-
-    // Ceramic Pot
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath();
-    ctx.roundRect(plantX - 11, plantY, 22, 22, [3, 3, 8, 8]);
-    ctx.fill();
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(plantX - 12, plantY, 24, 4);
-
-    // Lush Monstera Tropical Foliage
-    ctx.fillStyle = '#10b981';
-    for (let leaf = 0; leaf < 6; leaf++) {
-      const sway = Math.sin(t * 2 + leaf * 1.1) * 2;
-      const angle = (leaf * 55) * Math.PI / 180;
-      const lx = plantX + Math.cos(angle) * 16 + sway;
-      const ly = plantY - 10 + Math.sin(angle) * 12;
-
+    // Snake plant / Monstera vertical green stalks
+    const stalkColors = ['#10b981', '#059669', '#047857', '#34d399'];
+    for (let i = 0; i < 5; i++) {
+      const sway = Math.sin(t * 1.8 + i) * 1.2;
+      const sx = pos.x - 6 + i * 3 + sway;
+      const sh = 20 + (i % 3) * 8;
+      ctx.fillStyle = stalkColors[i % stalkColors.length];
       ctx.beginPath();
-      ctx.ellipse(lx, ly, 10, 5.5, angle, 0, Math.PI * 2);
+      ctx.ellipse(sx, pos.y - 18 - sh / 2, 2.8, sh / 2, (i - 2) * 0.12, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
   // =========================================================================
-  // 5. PERIMETER SPEED-GATE TURNSTILES (Optical Laser Security Stanchions)
+  // 2. LOUNGE ARMCHAIR & PEDESTAL SIDE TABLE
   // =========================================================================
-  renderPerimeterTurnstiles(ctx, pos, t) {
-    const stHeight = 36; // Waist-height standard 1.0m
-    const stWidth = 14;
+  renderLoungeArmchair(ctx, pos, t) {
+    // A. Round Pedestal Side Table (Left of chair)
+    const tableX = pos.x - 24;
+    const tableY = pos.y + 2;
 
-    // Left Stanchion Bollard
-    const st1X = pos.x - 24;
-    const st1Y = pos.y;
-    ctx.fillStyle = '#090d16'; // Deep brushed dark stainless
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.18)';
     ctx.beginPath();
-    ctx.roundRect(st1X - stWidth / 2, st1Y - stHeight, stWidth, stHeight, [5, 5, 2, 2]);
+    ctx.ellipse(tableX, tableY + 8, 11, 5, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#334155';
+
+    // Pedestal leg
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(tableX - 2, tableY - 10, 4, 18);
+
+    // Round white tabletop
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(tableX, tableY - 10, 11, 5.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Tiny white ceramic coffee mug on table
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(tableX - 2, tableY - 14, 4, 4);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.strokeRect(tableX - 2, tableY - 14, 4, 4);
+
+    // B. Minimalist White Cube Armchair
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, pos.y + 10, 26, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Armchair Base / Lower Cushion
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.roundRect(pos.x - 18, pos.y - 12, 36, 20, 5);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Left Armrest
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(pos.x - 20, pos.y - 20, 8, 22, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.stroke();
+
+    // Right Armrest
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(pos.x + 12, pos.y - 20, 8, 22, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.stroke();
+
+    // Backrest Cushion
+    ctx.fillStyle = '#e2e8f0';
+    ctx.beginPath();
+    ctx.roundRect(pos.x - 18, pos.y - 30, 36, 16, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.stroke();
+  }
+
+  // =========================================================================
+  // 3. THE VAULT / INDUSTRIAL HEAVY STEEL SAFE
+  // =========================================================================
+  renderVaultSafe(ctx, pos, t) {
+    // Floor Drop Shadow
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, pos.y + 12, 32, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const safeW = 46;
+    const safeH = 54;
+    const sx = pos.x - safeW / 2;
+    const sy = pos.y - safeH + 6;
+
+    // Heavy reinforced steel safe box (industrial dark gray)
+    ctx.fillStyle = '#334155';
+    ctx.beginPath();
+    ctx.roundRect(sx, sy, safeW, safeH, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Front Door Panel Inset (Beveled steel)
+    ctx.fillStyle = '#475569';
+    ctx.beginPath();
+    ctx.roundRect(sx + 4, sy + 4, safeW - 8, safeH - 8, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Side Heavy Steel Hinges (Left side)
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(sx + 1, sy + 10, 4, 8);
+    ctx.fillRect(sx + 1, sy + safeH - 18, 4, 8);
+
+    // Combination Dial Wheel (Chrome / steel round dial with spokes)
+    const dialX = pos.x - 4;
+    const dialY = pos.y - 20;
+
+    ctx.fillStyle = '#cbd5e1';
+    ctx.beginPath();
+    ctx.arc(dialX, dialY, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#0f172a';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // RFID / Biometric Scanner LED Top Plate
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(st1X - 4, st1Y - stHeight + 2, 8, 3);
-
-    // Right Stanchion Bollard
-    const st2X = pos.x + 24;
-    const st2Y = pos.y;
-    ctx.fillStyle = '#090d16';
+    // Dial spokes
+    ctx.fillStyle = '#0f172a';
     ctx.beginPath();
-    ctx.roundRect(st2X - stWidth / 2, st2Y - stHeight, stWidth, stHeight, [5, 5, 2, 2]);
+    ctx.arc(dialX, dialY, 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
 
-    // Scanner LED
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(st2X - 4, st2Y - stHeight + 2, 8, 3);
-
-    // Active Optical Security Lasers (Red glowing dual barrier beams)
-    ctx.save();
-    const laserAlpha = 0.55 + 0.45 * Math.sin(t * 8);
-    ctx.shadowColor = '#ef4444';
-    ctx.shadowBlur = 10;
-    ctx.strokeStyle = `rgba(239, 68, 68, ${laserAlpha})`;
-    ctx.lineWidth = 2.5;
-
-    // Beam 1 (Upper beam)
+    // Locking Lever Handle (Heavy horizontal bar with ball grip)
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(dialX + 9, dialY - 2, 11, 4);
     ctx.beginPath();
-    ctx.moveTo(st1X + 7, st1Y - 24);
-    ctx.lineTo(st2X - 7, st2Y - 24);
-    ctx.stroke();
+    ctx.arc(dialX + 20, dialY, 3, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Beam 2 (Lower beam)
+    // Top Rivets / Bolts
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(sx + 6, sy + 6, 2.5, 2.5);
+    ctx.fillRect(sx + safeW - 9, sy + 6, 2.5, 2.5);
+  }
+
+  // =========================================================================
+  // 4. MOBILE WHITEBOARD WITH FLOWCHART ON WHEELS
+  // =========================================================================
+  renderMobileWhiteboard(ctx, pos, t) {
+    const wbW = 82;
+    const wbH = 50;
+    const bx = pos.x - wbW / 2;
+    const by = pos.y - 68;
+
+    // Floor Shadow under caster stand
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
     ctx.beginPath();
-    ctx.moveTo(st1X + 7, st1Y - 12);
-    ctx.lineTo(st2X - 7, st2Y - 12);
-    ctx.stroke();
-    ctx.restore();
+    ctx.ellipse(pos.x, pos.y + 4, 38, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Glass Barrier Flap Leaves (Plexiglass barrier gates)
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+    // Aluminum Stand Vertical Legs & Caster Feet
+    ctx.fillStyle = '#64748b';
+    // Left leg
+    ctx.fillRect(bx + 10, by + wbH - 4, 4, 20);
+    ctx.fillRect(bx + 4, by + wbH + 14, 16, 3); // Left foot
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(bx + 6, by + wbH + 18, 2.5, 0, Math.PI * 2); // Wheel
+    ctx.arc(bx + 18, by + wbH + 18, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right leg
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(bx + wbW - 14, by + wbH - 4, 4, 20);
+    ctx.fillRect(bx + wbW - 20, by + wbH + 14, 16, 3);
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(bx + wbW - 18, by + wbH + 18, 2.5, 0, Math.PI * 2);
+    ctx.arc(bx + wbW - 6, by + wbH + 18, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Whiteboard Frame (Metallic Silver)
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(bx, by, wbW, wbH);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, by, wbW, wbH);
+
+    // Whiteboard Dry-Erase Gloss Surface
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(bx + 3, by + 3, wbW - 6, wbH - 6);
+
+    // Architectural System Flowchart (Drawn in clean dark pixel lines)
+    ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1.2;
 
-    // Wing 1 (Left swing leaf)
+    // Flowchart Box 1 (Start/Input block)
+    ctx.strokeRect(bx + 8, by + 10, 16, 10);
+    ctx.fillStyle = '#e2e8f0'; ctx.fillRect(bx + 9, by + 11, 14, 8);
+
+    // Connecting Arrow 1 -> 2
     ctx.beginPath();
-    ctx.rect(st1X + 5, st1Y - 28, 14, 22);
-    ctx.fill();
+    ctx.moveTo(bx + 24, by + 15);
+    ctx.lineTo(bx + 34, by + 15);
     ctx.stroke();
 
-    // Wing 2 (Right swing leaf)
+    // Flowchart Box 2 (Core logic decision)
+    ctx.strokeRect(bx + 34, by + 8, 20, 14);
+    ctx.fillStyle = '#dbeafe'; ctx.fillRect(bx + 35, by + 9, 18, 12);
+
+    // Branching Lines
     ctx.beginPath();
-    ctx.rect(st2X - 19, st2Y - 28, 14, 22);
+    ctx.moveTo(bx + 44, by + 22);
+    ctx.lineTo(bx + 44, by + 30);
+    ctx.lineTo(bx + 20, by + 30);
+    ctx.lineTo(bx + 20, by + 34);
+    ctx.stroke();
+
+    // Flowchart Box 3 (Lower module)
+    ctx.strokeRect(bx + 12, by + 34, 18, 9);
+    ctx.fillStyle = '#fef3c7'; ctx.fillRect(bx + 13, by + 35, 16, 7);
+
+    // Flowchart Box 4 (Right Output block)
+    ctx.beginPath();
+    ctx.moveTo(bx + 54, by + 15);
+    ctx.lineTo(bx + 62, by + 15);
+    ctx.stroke();
+    ctx.strokeRect(bx + 62, by + 10, 14, 10);
+    ctx.fillStyle = '#dcfce7'; ctx.fillRect(bx + 63, by + 11, 12, 8);
+
+    // Dry-erase marker pen tray at bottom of board
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(bx + 14, by + wbH - 2, wbW - 28, 2.5);
+  }
+
+  // =========================================================================
+  // 5. KANBAN WALL (Wall-mounted 4-column sprint board with colorful tickets)
+  // =========================================================================
+  renderKanbanWall(ctx, pos, t) {
+    const kwW = 86;
+    const kwH = 54;
+    const kx = pos.x - kwW / 2;
+    const ky = pos.y - 74;
+
+    // Wall Board Outer Frame (Thin modern aluminum edge)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(kx, ky, kwW, kwH);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(kx, ky, kwW, kwH);
+
+    // Board Drop Shadow on back wall
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.15)';
+    ctx.fillRect(kx + 2, ky + 2, kwW, kwH);
+
+    // 4 Vertical Columns (Backlog, In Progress, Review, Done)
+    const colW = (kwW - 10) / 4;
+    const columnHeaders = ['#f87171', '#fbbf24', '#818cf8', '#34d399']; // Coral, Yellow, Purple, Mint
+
+    for (let c = 0; c < 4; c++) {
+      const cx = kx + 5 + c * colW;
+
+      // Column Header Pill
+      ctx.fillStyle = columnHeaders[c];
+      ctx.fillRect(cx, ky + 5, colW - 2, 3);
+
+      // Column divider line
+      if (c > 0) {
+        ctx.strokeStyle = '#f1f5f9';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx - 1, ky + 4);
+        ctx.lineTo(cx - 1, ky + kwH - 4);
+        ctx.stroke();
+      }
+
+      // Sticky Notes / Agile Task Cards
+      const cardCounts = [3, 4, 3, 2];
+      const count = cardCounts[c];
+      for (let k = 0; k < count; k++) {
+        const cardY = ky + 11 + k * 9.5;
+        // Sticky note colors matching screenshot: Coral, Yellow, Purple, Mint
+        const notePalette = ['#fed7aa', '#fef08a', '#e9d5ff', '#a7f3d0'];
+        ctx.fillStyle = notePalette[(c + k) % notePalette.length];
+        ctx.fillRect(cx + 1, cardY, colW - 4, 7.5);
+
+        // Faint card text lines
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(cx + 2.5, cardY + 2, colW - 7, 1);
+        ctx.fillRect(cx + 2.5, cardY + 4.2, colW - 10, 0.8);
+      }
+    }
+  }
+
+  // =========================================================================
+  // 6. SECURITY TURNSTILE GATE (RFID Scanner, barrier bar, and glass pylons)
+  // =========================================================================
+  renderSecurityGate(ctx, pos, t) {
+    // Floor shadow
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, pos.y + 6, 34, 12, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // A. Left RFID Terminal Scanner Pedestal
+    const rfidX = pos.x - 18;
+    const rfidY = pos.y;
+    ctx.fillStyle = '#334155';
+    ctx.beginPath();
+    ctx.roundRect(rfidX - 5, rfidY - 26, 10, 26, [3, 3, 1, 1]);
+    ctx.fill();
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // RFID Reader Screen (Glowing cyan scanner indicator)
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(rfidX - 3, rfidY - 24, 6, 5);
+
+    // B. Middle Turnstile Barrier Bar (Silver chrome arm)
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillRect(rfidX + 5, rfidY - 14, 18, 3.5);
+    ctx.strokeStyle = '#64748b';
+    ctx.strokeRect(rfidX + 5, rfidY - 14, 18, 3.5);
+
+    // C. Right Security Pylons (Two sleek stainless/glass pylons)
+    const pylonX = pos.x + 14;
+    for (let p = 0; p < 2; p++) {
+      const px = pylonX + p * 10;
+      // Stainless post
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.roundRect(px - 3, rfidY - 30, 6, 30, [2, 2, 1, 1]);
+      ctx.fill();
+
+      // Translucent security glass fin
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.fillRect(px - 1, rfidY - 28, 2, 24);
+
+      // Top Status LED (Green access dot)
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(px - 2, rfidY - 32, 4, 2);
+    }
+  }
+
+  // =========================================================================
+  // 7. DESK 01 (Warm Wooden Desk, Dual Green-Code Monitors, Drawers, Chair)
+  // =========================================================================
+  renderDesk01(ctx, pos, t) {
+    // Floor shadow
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, pos.y + 16, 54, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const deskH = 24;
+    const dy = pos.y - deskH;
+
+    // A. Warm Medium-Brown Wooden Desk Structure
+    // Left Leg Panel
+    ctx.fillStyle = '#5c3826'; // Deep walnut
+    ctx.fillRect(pos.x - 40, dy + 6, 6, 24);
+
+    // Right Pedestal 3-Drawer Cabinet
+    const drawerX = pos.x + 22;
+    ctx.fillStyle = '#784323'; // Warm chestnut
+    ctx.beginPath();
+    ctx.roundRect(drawerX, dy + 4, 18, 26, [0, 0, 3, 3]);
+    ctx.fill();
+    ctx.strokeStyle = '#5c3826';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 3 Drawer horizontal slots and metallic silver handles
+    for (let d = 0; d < 3; d++) {
+      const drawerY = dy + 6 + d * 8;
+      ctx.strokeStyle = '#452212';
+      ctx.strokeRect(drawerX + 1, drawerY, 16, 7);
+      // Silver handle
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(drawerX + 6, drawerY + 3, 6, 1.5);
+    }
+
+    // Wooden Desk Top Surface (Isometric Diamond Slab)
+    ctx.fillStyle = '#9a5c37'; // Rich warm walnut tabletop
+    ctx.beginPath();
+    ctx.moveTo(pos.x, dy - 18);
+    ctx.lineTo(pos.x + 46, dy + 5);
+    ctx.lineTo(pos.x, dy + 28);
+    ctx.lineTo(pos.x - 46, dy + 5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Beveled Desk Edge Highlight
+    ctx.strokeStyle = '#b8754b';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // B. Mini Potted Succulent Plant (Left desk corner)
+    const plantDeskX = pos.x - 26;
+    const plantDeskY = dy + 2;
+    // White tiny pot
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(plantDeskX - 3, plantDeskY - 2, 6, 6);
+    // Green succulent rosette
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(plantDeskX, plantDeskY - 4, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // C. Peripherals: White Keyboard, Mouse, and Mousepad
+    const padX = pos.x - 14;
+    const padY = dy + 8;
+    // Gray mousepad
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(padX, padY, 32, 14);
+
+    // Slim White Keyboard
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(padX + 2, padY + 2, 20, 9);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(padX + 2, padY + 2, 20, 9);
+
+    // White Mouse
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(padX + 24, padY + 3, 5, 7, 2);
+    ctx.fill();
+
+    // D. Dual Side-by-Side Monitors with Green Code Lines
+    const monW = 28;
+    const monH = 20;
+
+    // Monitor 1 (Left Screen)
+    const m1X = pos.x - 20;
+    const m1Y = dy - 14;
+
+    // Stand
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(m1X - 2, m1Y + monH, 4, 7);
+    ctx.fillRect(m1X - 6, m1Y + monH + 6, 12, 2);
+
+    // Bezel
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect(m1X - monW / 2, m1Y, monW, monH, 2.5);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Screen: Dark IDE background + Matrix green code
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(m1X - monW / 2 + 2, m1Y + 2, monW - 4, monH - 4);
+    ctx.fillStyle = '#22c55e'; // Bright green syntax code
+    for (let l = 0; l < 4; l++) {
+      ctx.fillRect(m1X - monW / 2 + 4, m1Y + 4 + l * 3.5, 10 + (l * 4) % 12, 1.2);
+    }
+
+    // Monitor 2 (Right Screen)
+    const m2X = pos.x + 10;
+    const m2Y = dy - 14;
+
+    // Stand
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(m2X - 2, m2Y + monH, 4, 7);
+    ctx.fillRect(m2X - 6, m2Y + monH + 6, 12, 2);
+
+    // Bezel
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect(m2X - monW / 2, m2Y, monW, monH, 2.5);
+    ctx.fill();
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Screen
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(m2X - monW / 2 + 2, m2Y + 2, monW - 4, monH - 4);
+    ctx.fillStyle = '#22c55e';
+    for (let l = 0; l < 4; l++) {
+      ctx.fillRect(m2X - monW / 2 + 4, m2Y + 4 + l * 3.5, 8 + (l * 5) % 13, 1.2);
+    }
+
+    // E. Ergonomic Office Task Chair (Foreground, facing desk)
+    const chairY = pos.y + 18;
+    // 5-Star Caster Base
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, chairY + 2, 14, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Seat Cushion (Light gray / white)
+    ctx.fillStyle = '#e2e8f0';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, chairY - 6, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.stroke();
+
+    // Ergonomic Backrest
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.roundRect(pos.x - 9, chairY - 24, 18, 16, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
     ctx.stroke();
   }
 }

@@ -1,110 +1,67 @@
 /**
  * SAMS Spatial Agentic Visualiser - Robot Agent Entity
- * Procedural Chibi robot renderer with modular dynamic color masking,
- * delta-time waypoint interpolation, and VisorStateMachine integration.
+ * Supports:
+ * 1. Tall Humanoid Director Robot (Blue developer at Desk 01, 4-5 heads tall, mecha proportions)
+ * 2. Seated Lounge Robot (Red/coral relaxing in armchair)
+ * 3. Chibi Worker Robots (Short, 2-2.5 heads tall, antenna, wings, dynamic poses)
  */
 
 import { VisorStateMachine, VISOR_STATES } from './VisorStateMachine.js';
 
-export const AGENT_PALETTES = [
-  { primary: '#2563eb', dark: '#1d4ed8', name: 'Cobalt Blue' },
-  { primary: '#f97316', dark: '#ea580c', name: 'Solar Orange' },
-  { primary: '#8b5cf6', dark: '#7c3aed', name: 'Neon Purple' },
-  { primary: '#10b981', dark: '#059669', name: 'Emerald Green' },
-  { primary: '#ef4444', dark: '#dc2626', name: 'Crimson Red' },
-  { primary: '#14b8a6', dark: '#0d9488', name: 'Teal Core' }
-];
-
 export class RobotAgent {
   /**
    * @param {Object} config
-   * @param {string} config.id - Agent identifier (e.g. 'agent_coder_01')
-   * @param {string} [config.name] - Human-readable label
-   * @param {number} [config.gridX=6]
-   * @param {number} [config.gridY=6]
-   * @param {string} [config.primaryColor='#2563eb']
-   * @param {string} [config.darkColor='#1d4ed8']
-   * @param {string} [config.role='Core Engineer']
-   * @param {string} [config.initialState='idle']
-   * @param {number} [config.scale=0.45] - Isometric chibi scale
    */
   constructor(config = {}) {
     this.id = config.id || `agent_${Math.random().toString(36).substring(2, 7)}`;
     this.name = config.name || this.id;
-    this.role = config.role || 'Autonomous Worker';
+    this.role = config.role || 'Worker';
 
-    // Position coordinates (grid space)
-    this.gridX = config.gridX !== undefined ? config.gridX : 6.0;
-    this.gridY = config.gridY !== undefined ? config.gridY : 6.0;
+    // Type of model: Director (Tall) vs Chibi (Short)
+    this.isDirector = config.isDirector || false;
+    this.variant = config.variant || 'chibi'; // 'director' | 'seated_lounge' | 'chibi_antenna' | 'chibi_kanban' | 'chibi_gate' | 'chibi_center'
+
+    // Position coordinates
+    this.gridX = config.gridX !== undefined ? config.gridX : 5.0;
+    this.gridY = config.gridY !== undefined ? config.gridY : 5.0;
     this.gridZ = 0;
 
-    // Navigation target waypoint
+    // Movement
     this.targetGridX = this.gridX;
     this.targetGridY = this.gridY;
-    this.moveSpeed = 2.2; // Grid units per second
+    this.moveSpeed = 2.0;
     this.isMoving = false;
 
-    // Appearance & Coloring
+    // Colors
     this.primaryColor = config.primaryColor || '#2563eb';
     this.darkColor = config.darkColor || '#1d4ed8';
-    this.scale = config.scale || 0.24; // Real-world chibi architectural scale (~42px height)
 
-    // Visor State Machine
-    this.visor = new VisorStateMachine(config.initialState || VISOR_STATES.IDLE);
+    // Visor
+    this.visor = new VisorStateMachine(config.initialState || VISOR_STATES.ACTIVE);
 
-    // Motion Modes: 'breath', 'hover', 'bounce', 'walk'
-    this.motion = 'breath';
-    this.taskSummary = 'Standby for commands';
-    this.targetZone = 'Corridor';
-
-    // Animation internal counters
+    // Dynamic state
+    this.taskSummary = config.taskSummary || 'Executing operations';
+    this.targetZone = config.targetZone || 'Desk 01';
     this.animTime = Math.random() * 10;
-    this.facingRight = true;
     this.selected = false;
   }
 
-  /**
-   * Sets new execution state and target zone from telemetry event.
-   * @param {string} state
-   * @param {string} [targetZone]
-   * @param {string} [summary]
-   */
   setExecutionState(state, targetZone, summary) {
     this.visor.setState(state);
     if (targetZone) this.targetZone = targetZone;
     if (summary) this.taskSummary = summary;
-
-    if (state === VISOR_STATES.ACTIVE) {
-      this.motion = 'hover';
-    } else if (state === VISOR_STATES.SUCCESS) {
-      this.motion = 'bounce';
-    } else if (state === VISOR_STATES.RESEARCHING) {
-      this.motion = 'hover';
-    } else {
-      this.motion = 'breath';
-    }
   }
 
-  /**
-   * Dispatches agent to navigate towards grid coordinates.
-   * @param {number} x
-   * @param {number} y
-   */
   moveTo(x, y) {
     this.targetGridX = x;
     this.targetGridY = y;
     this.isMoving = true;
   }
 
-  /**
-   * Frame update with delta time.
-   * @param {number} dt - Delta time in seconds
-   */
   update(dt) {
     this.animTime += dt;
     this.visor.update(dt);
 
-    // Waypoint navigation interpolation
     if (this.isMoving) {
       const dx = this.targetGridX - this.gridX;
       const dy = this.targetGridY - this.gridY;
@@ -112,230 +69,339 @@ export class RobotAgent {
 
       if (dist > 0.05) {
         const step = this.moveSpeed * dt;
-        const moveFrac = Math.min(1, step / dist);
-        this.gridX += dx * moveFrac;
-        this.gridY += dy * moveFrac;
-
-        // Facing direction based on grid velocity
-        if (dx - dy > 0.01) this.facingRight = true;
-        else if (dx - dy < -0.01) this.facingRight = false;
-
-        this.motion = 'walk';
+        const frac = Math.min(1, step / dist);
+        this.gridX += dx * frac;
+        this.gridY += dy * frac;
       } else {
         this.gridX = this.targetGridX;
         this.gridY = this.targetGridY;
         this.isMoving = false;
-
-        // Restore motion according to visor state
-        const st = this.visor.currentState;
-        if (st === VISOR_STATES.ACTIVE || st === VISOR_STATES.RESEARCHING) {
-          this.motion = 'hover';
-        } else if (st === VISOR_STATES.SUCCESS) {
-          this.motion = 'bounce';
-        } else {
-          this.motion = 'breath';
-        }
       }
     }
   }
 
-  /**
-   * Renders the complete Chibi Robot agent onto Canvas 2D at the projected screen position.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {{x: number, y: number}} screenPos
-   * @param {number} t - Global elapsed time
-   */
   render(ctx, screenPos, t) {
     const time = this.animTime;
+
     ctx.save();
     ctx.translate(screenPos.x, screenPos.y);
-    ctx.scale(this.scale, this.scale);
 
-    const cx = 0;
-    let cy = -50; // Pivot at feet level
-    let bob = 0;
-    let armAngle = 0;
-    let legWalkPhase = 0;
-    let legCompress = 0;
-
-    // Procedural Motion Calculations
-    if (this.motion === 'breath') {
-      bob = Math.sin(time * 3) * 3;
-    } else if (this.motion === 'hover') {
-      bob = Math.sin(time * 4) * 10 - 10;
-      armAngle = Math.sin(time * 4) * 0.18;
-    } else if (this.motion === 'bounce') {
-      bob = -Math.abs(Math.sin(time * 6)) * 16;
-      armAngle = Math.sin(time * 6) * 0.3;
-      if (bob > -2) legCompress = 3;
-    } else if (this.motion === 'walk') {
-      bob = Math.abs(Math.sin(time * 10)) * 4 - 2;
-      legWalkPhase = Math.sin(time * 10) * 8;
-      armAngle = Math.sin(time * 10) * 0.35;
+    if (this.isDirector) {
+      this.renderTallDirector(ctx, time);
+    } else if (this.variant === 'seated_lounge') {
+      this.renderSeatedLoungeRobot(ctx, time);
+    } else {
+      this.renderChibiWorker(ctx, time);
     }
-
-    cy += bob;
-
-    // 1. Soft Floor Shadow (expands/contracts with elevation)
-    const shadowScale = Math.max(0.4, 1 - (bob / -40));
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
-    ctx.beginPath();
-    ctx.ellipse(cx, 0, 52 * shadowScale, 18 * shadowScale, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Selection ring highlight if focused
-    if (this.selected) {
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(cx, 0, 60, 22, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // 2. Dual Cylindrical Legs
-    const legY = cy + 44;
-    ctx.fillStyle = '#1e293b';
-
-    // Left Leg
-    ctx.beginPath();
-    ctx.roundRect(cx - 28, legY - legCompress - legWalkPhase, 18, 42 + legCompress, 9);
-    ctx.fill();
-
-    // Right Leg
-    ctx.beginPath();
-    ctx.roundRect(cx + 10, legY - legCompress + legWalkPhase, 18, 42 + legCompress, 9);
-    ctx.fill();
-
-    // Dark Boots
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath();
-    ctx.roundRect(cx - 30, legY + 28 - legWalkPhase, 22, 16, 8);
-    ctx.roundRect(cx + 8, legY + 28 + legWalkPhase, 22, 16, 8);
-    ctx.fill();
-
-    // 3. Floating Arm Pods (Left & Right)
-    // Left Arm
-    ctx.save();
-    ctx.translate(cx - 52, cy + 16);
-    ctx.rotate(-armAngle);
-    ctx.fillStyle = this.primaryColor;
-    ctx.beginPath();
-    ctx.roundRect(-10, -6, 20, 48, 10);
-    ctx.fill();
-    ctx.fillStyle = this.darkColor;
-    ctx.beginPath();
-    ctx.arc(0, 36, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // Right Arm
-    ctx.save();
-    ctx.translate(cx + 52, cy + 16);
-    ctx.rotate(armAngle);
-    ctx.fillStyle = this.primaryColor;
-    ctx.beginPath();
-    ctx.roundRect(-10, -6, 20, 48, 10);
-    ctx.fill();
-    ctx.fillStyle = this.darkColor;
-    ctx.beginPath();
-    ctx.arc(0, 36, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // 4. Capsule Body (Torso)
-    const bodyGrad = ctx.createLinearGradient(cx - 45, cy - 20, cx + 45, cy + 60);
-    bodyGrad.addColorStop(0, this.primaryColor);
-    bodyGrad.addColorStop(1, this.darkColor);
-
-    ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.roundRect(cx - 45, cy - 16, 90, 76, 32);
-    ctx.fill();
-
-    // Minimalist Chest Plate
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-    ctx.beginPath();
-    ctx.roundRect(cx - 24, cy + 8, 48, 32, 12);
-    ctx.fill();
-
-    // 5. Chibi Helmet (116 x 88 px)
-    const headY = cy - 70;
-    const headGrad = ctx.createLinearGradient(cx - 58, headY - 45, cx + 58, headY + 45);
-    headGrad.addColorStop(0, this.primaryColor);
-    headGrad.addColorStop(1, this.darkColor);
-
-    ctx.fillStyle = headGrad;
-    ctx.beginPath();
-    ctx.roundRect(cx - 58, headY - 42, 116, 88, 38);
-    ctx.fill();
-
-    // Ear Pods Left & Right
-    ctx.fillStyle = this.darkColor;
-    ctx.beginPath();
-    ctx.roundRect(cx - 64, headY - 14, 8, 28, 4);
-    ctx.roundRect(cx + 56, headY - 14, 8, 28, 4);
-    ctx.fill();
-
-    // 6. Glossy Black Visor (86 x 54 px)
-    const visorW = 86;
-    const visorH = 54;
-    const visorX = cx - visorW / 2;
-    const visorY = headY - 26;
-
-    ctx.fillStyle = '#060911';
-    ctx.beginPath();
-    ctx.roundRect(visorX, visorY, visorW, visorH, 18);
-    ctx.fill();
-
-    // Visor Glass Reflection Highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(visorX + 2, visorY + 2, visorW - 4, visorH - 4, 16);
-    ctx.stroke();
-
-    // 7. Render Dynamic Visor Eyes
-    this.visor.renderVisorEyes(ctx, cx, visorY + visorH / 2, time);
-
-    // 8. Overhead Agent Floating Badge
-    this.renderOverheadBadge(ctx, cx, headY - 60);
 
     ctx.restore();
   }
 
-  /**
-   * Renders agent label badge above the helmet.
-   * @param {CanvasRenderingContext2D} ctx
-   * @param {number} x
-   * @param {number} y
-   */
-  renderOverheadBadge(ctx, x, y) {
-    const tagText = this.name.toUpperCase();
-    ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
-    const textW = ctx.measureText(tagText).width;
-    const badgeW = Math.max(textW + 20, 58);
-    const badgeH = 22;
+  // =========================================================================
+  // 1. TALL DIRECTOR ROBOT (4 to 5 heads tall, elongated limbs, desk seated)
+  // =========================================================================
+  renderTallDirector(ctx, time) {
+    const bob = Math.sin(time * 3.5) * 1.5;
+    const cx = 0;
+    const cy = -26 + bob;
 
-    // Badge Pill Box
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    // Shadow
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.25)';
     ctx.beginPath();
-    ctx.roundRect(x - badgeW / 2, y - badgeH / 2, badgeW, badgeH, 11);
+    ctx.ellipse(0, 0, 16, 6, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Status Indicator Dot
+    // A. Long Articulated Legs (Seated posture, knees bent toward desk)
+    ctx.fillStyle = '#0f172a'; // Inner mechanical joints
+    // Thighs
+    ctx.beginPath();
+    ctx.roundRect(cx - 10, cy + 16, 6, 14, 2);
+    ctx.roundRect(cx + 4, cy + 16, 6, 14, 2);
+    ctx.fill();
+    // Blue Armored Shins / Calves
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 11, cy + 24, 7, 14, 2);
+    ctx.roundRect(cx + 4, cy + 24, 7, 14, 2);
+    ctx.fill();
+
+    // B. Elongated Humanoid Torso (Mecha armor plates)
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 9, cy - 6, 18, 24, [5, 5, 2, 2]);
+    ctx.fill();
+
+    // White Chest Armor Plate
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.roundRect(cx - 6, cy - 2, 12, 14, 3);
+    ctx.fill();
+
+    // C. Articulated Arms (Typing pose on keyboard)
+    const typeOffset = Math.sin(time * 12) * 1.8;
+
+    // Left Arm (Reaching forward)
+    ctx.fillStyle = this.darkColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 13, cy, 4, 14, 2);
+    ctx.fill();
+    ctx.fillStyle = this.primaryColor;
+    ctx.fillRect(cx - 13, cy + 10, 8, 3.5); // Forearm
+    // White hand on keyboard
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(cx - 5, cy + 12 + typeOffset, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Right Arm (Reaching forward)
+    ctx.fillStyle = this.darkColor;
+    ctx.beginPath();
+    ctx.roundRect(cx + 9, cy, 4, 14, 2);
+    ctx.fill();
+    ctx.fillStyle = this.primaryColor;
+    ctx.fillRect(cx + 5, cy + 10, 8, 3.5);
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(cx + 5, cy + 12 - typeOffset, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // D. Articulated Neck
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(cx - 2.5, cy - 10, 5, 4);
+
+    // E. Tall Sleek Mecha Helmet (Distinct cranial chassis)
+    const headY = cy - 24;
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 10, headY, 20, 16, [6, 6, 4, 4]);
+    ctx.fill();
+
+    // White Crest Fin on top of helmet
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(cx - 1.5, headY - 4, 3, 5);
+
+    // Glossy Visor Screen
+    ctx.fillStyle = '#090d16';
+    ctx.beginPath();
+    ctx.roundRect(cx - 8, headY + 3, 16, 9, 3);
+    ctx.fill();
+
+    // Cyan glowing director eyes
+    const eyeCfg = this.visor.getConfig();
+    ctx.fillStyle = eyeCfg.color;
+    ctx.shadowColor = eyeCfg.color;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(cx - 3.5, headY + 7.5, 2, 0, Math.PI * 2);
+    ctx.arc(cx + 3.5, headY + 7.5, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // =========================================================================
+  // 2. SEATED LOUNGE ROBOT (Red/Coral supervisor relaxing in armchair)
+  // =========================================================================
+  renderSeatedLoungeRobot(ctx, time) {
+    const cx = 0;
+    const cy = -16;
+
+    // Body reclined in armchair
+    ctx.fillStyle = this.primaryColor; // Crimson/coral
+    ctx.beginPath();
+    ctx.roundRect(cx - 8, cy - 2, 16, 18, 4);
+    ctx.fill();
+
+    // White chest plate
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(cx - 5, cy + 1, 10, 10);
+
+    // Relaxed arms resting on chair armrests
+    ctx.fillStyle = this.darkColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 12, cy + 2, 4, 12, 2);
+    ctx.roundRect(cx + 8, cy + 2, 4, 12, 2);
+    ctx.fill();
+
+    // Legs bent forward
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 7, cy + 14, 5, 10, 2);
+    ctx.roundRect(cx + 2, cy + 14, 5, 10, 2);
+    ctx.fill();
+
+    // Head with antenna ears
+    const headY = cy - 16;
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 9, headY, 18, 14, 5);
+    ctx.fill();
+
+    // Side Antenna Ears
+    ctx.fillStyle = this.darkColor;
+    ctx.fillRect(cx - 11, headY + 3, 2, 5);
+    ctx.fillRect(cx + 9, headY + 3, 2, 5);
+
+    // Visor with glowing cyan slit eyes
+    ctx.fillStyle = '#090d16';
+    ctx.beginPath();
+    ctx.roundRect(cx - 7, headY + 3, 14, 7, 2.5);
+    ctx.fill();
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.shadowColor = '#38bdf8';
+    ctx.shadowBlur = 5;
+    ctx.fillRect(cx - 5, headY + 5.5, 4, 2);
+    ctx.fillRect(cx + 1, headY + 5.5, 4, 2);
+    ctx.shadowBlur = 0;
+  }
+
+  // =========================================================================
+  // 3. CHIBI WORKER ROBOTS (Compact 2-2.5 heads tall, cute & modular)
+  // =========================================================================
+  renderChibiWorker(ctx, time) {
+    const bob = Math.sin(time * 4) * 1.5;
+    const cx = 0;
+    const cy = -18 + bob;
+
+    // Floor shadow
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.22)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 12, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Stubby legs
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.roundRect(cx - 6, cy + 12, 4, 8, 2);
+    ctx.roundRect(cx + 2, cy + 12, 4, 8, 2);
+    ctx.fill();
+
+    // Compact Torso
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 8, cy, 16, 13, 5);
+    ctx.fill();
+
+    // Center chest dot/accent
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(cx, cy + 6, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Arms based on variant
+    if (this.variant === 'chibi_kanban') {
+      // Right arm raised pointing at sticky note
+      ctx.fillStyle = this.darkColor;
+      ctx.beginPath();
+      ctx.roundRect(cx - 10, cy + 1, 3.5, 8, 1.5);
+      ctx.fill();
+      // Raised right arm
+      ctx.beginPath();
+      ctx.roundRect(cx + 6, cy - 4, 3.5, 9, 1.5);
+      ctx.fill();
+    } else {
+      // Normal cute floating side arms
+      ctx.fillStyle = this.darkColor;
+      ctx.beginPath();
+      ctx.roundRect(cx - 10, cy + 2, 3.5, 8, 1.5);
+      ctx.roundRect(cx + 6.5, cy + 2, 3.5, 8, 1.5);
+      ctx.fill();
+    }
+
+    // Large Chibi Pill Head
+    const headY = cy - 17;
+    ctx.fillStyle = this.primaryColor;
+    ctx.beginPath();
+    ctx.roundRect(cx - 11, headY, 22, 17, 7);
+    ctx.fill();
+
+    // Head accessories according to variant
+    if (this.variant === 'chibi_antenna') {
+      // Left-side tall single antenna
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(cx - 6, headY - 6, 2, 7);
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(cx - 5, headY - 7, 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (this.variant === 'chibi_gate') {
+      // Aerodynamic side winglets / ear fins
+      ctx.fillStyle = '#34d399';
+      ctx.beginPath();
+      ctx.moveTo(cx - 11, headY + 6);
+      ctx.lineTo(cx - 16, headY + 3);
+      ctx.lineTo(cx - 11, headY + 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(cx + 11, headY + 6);
+      ctx.lineTo(cx + 16, headY + 3);
+      ctx.lineTo(cx + 11, headY + 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Visor Screen
+    const visorW = 16;
+    const visorH = 10;
+    ctx.fillStyle = '#060911';
+    ctx.beginPath();
+    ctx.roundRect(cx - visorW / 2, headY + 3.5, visorW, visorH, 3.5);
+    ctx.fill();
+
+    // Render LED Visor Eyes
+    this.renderChibiEyes(ctx, cx, headY + 8.5, time);
+  }
+
+  renderChibiEyes(ctx, vx, vy, t) {
+    ctx.save();
     const cfg = this.visor.getConfig();
     ctx.fillStyle = cfg.color;
     ctx.shadowColor = cfg.color;
-    ctx.shadowBlur = 4;
-    ctx.beginPath();
-    ctx.arc(x - badgeW / 2 + 10, y, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    ctx.shadowBlur = 5;
 
-    // Badge Label
-    ctx.fillStyle = '#f8fafc';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(tagText, x - badgeW / 2 + 18, y);
+    const st = this.visor.currentState;
+
+    if (st === VISOR_STATES.ACTIVE) {
+      // Large circular/oval eyes
+      ctx.beginPath();
+      ctx.arc(vx - 3.5, vy, 2, 0, Math.PI * 2);
+      ctx.arc(vx + 3.5, vy, 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (st === VISOR_STATES.RESEARCHING) {
+      // Horizontal slit eyes
+      ctx.fillRect(vx - 5, vy - 1, 4, 2);
+      ctx.fillRect(vx + 1, vy - 1, 4, 2);
+    } else if (st === VISOR_STATES.ERROR) {
+      // X X glitch
+      ctx.font = '800 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('x', vx - 3.5, vy);
+      ctx.fillText('x', vx + 3.5, vy);
+    } else if (st === VISOR_STATES.OFFLINE) {
+      // Flat dashes
+      ctx.fillRect(vx - 5, vy, 4, 1.2);
+      ctx.fillRect(vx + 1, vy, 4, 1.2);
+    } else if (st === VISOR_STATES.SUCCESS) {
+      // Smile arcs ^ ^
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = cfg.color;
+      ctx.beginPath();
+      ctx.arc(vx - 3.5, vy + 1, 2, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(vx + 3.5, vy + 1, 2, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.stroke();
+    } else {
+      // Idle: Vertical oval eyes
+      ctx.beginPath();
+      ctx.roundRect(vx - 4.5, vy - 2, 2.5, 4, 1);
+      ctx.roundRect(vx + 2, vy - 2, 2.5, 4, 1);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 }

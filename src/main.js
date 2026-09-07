@@ -1,7 +1,11 @@
 /**
- * SAMS Spatial Agentic Visualiser - Main Application Entry Point
- * Orchestrates Canvas 2D render loop, isometric projection, entity simulation,
- * telemetry ingestion, and user interface.
+ * SAMS Spatial Agentic Visualiser - Main Orchestrator
+ * Recreates the exact isometric pixel-art diorama from reference screenshot:
+ * - Tall Humanoid Director Robot (Desk 01)
+ * - Seated Coral Robot (Lounge Armchair)
+ * - 4 Specialized Chibi Worker Robots (Vault, Whiteboard, Kanban, Security Gate)
+ * - Floating Frosted Station Badges
+ * - 6-Avatar Expression Dock & Telemetry Bridge
  */
 
 import { IsometricEngine } from './core/IsometricEngine.js';
@@ -9,7 +13,7 @@ import { Camera } from './core/Camera.js';
 import { RoomArchitecture } from './world/RoomArchitecture.js';
 import { PropsRegistry } from './world/PropsRegistry.js';
 import { WORKSTATION_ZONES, getZoneAtGrid, getWaypointForZone } from './world/Workstations.js';
-import { RobotAgent, AGENT_PALETTES } from './entities/RobotAgent.js';
+import { RobotAgent } from './entities/RobotAgent.js';
 import { EventBridge } from './network/EventBridge.js';
 import { HUDOverlay } from './ui/HUDOverlay.js';
 import { DockControls } from './ui/DockControls.js';
@@ -18,16 +22,16 @@ class SamsVisualiserApp {
   constructor() {
     this.container = document.getElementById('app-container');
     if (!this.container) {
-      throw new Error('Element #app-container not found in DOM.');
+      throw new Error('Element #app-container not found');
     }
 
-    // 1. Create and setup HTML5 Canvas 2D
+    // 1. Create HTML5 Canvas 2D
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'viewportCanvas';
     this.container.appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d', { alpha: false });
 
-    // 2. Core Engines
+    // 2. Isometric Projection & Camera Engine
     this.engine = new IsometricEngine({
       tileWidth: 54,
       tileHeight: 27,
@@ -35,40 +39,35 @@ class SamsVisualiserApp {
     });
 
     this.camera = new Camera(this.canvas, {
-      zoom: 1.35,
-      minZoom: 0.5,
-      maxZoom: 3.2
+      zoom: 1.45,
+      minZoom: 0.6,
+      maxZoom: 3.0
     });
 
-    // 3. World & Props
-    this.room = new RoomArchitecture(this.engine, { gridSize: 12 });
+    // 3. Room & Reference Diorama Props
+    this.room = new RoomArchitecture(this.engine, { gridSize: 10, wallHeight: 80 });
     this.propsRegistry = new PropsRegistry(this.engine);
     this.props = this.propsRegistry.getAllProps();
 
-    // 4. Agents Pool
+    // 4. Roster: Tall Director Robot + Seated Lounge + Chibi Drone Crew
     this.agents = new Map();
-    this.initAgents();
+    this.initReferenceRoster();
 
-    // 5. User Interface (HUD & Controls)
-    this.activeFilter = 'all';
+    // 5. User Interface: Floating Station Badges & 6-Avatar Dock
     this.fpsCap = 60;
-    this.hoveredEntity = null;
     this.hoveredTile = null;
 
     this.hud = new HUDOverlay(this.container, {
-      onAgentSelect: (agentId) => this.focusAgent(agentId)
+      onStationSelect: (stationId) => this.focusStation(stationId)
     });
 
     this.dock = new DockControls(this.container, {
-      onThemeChange: (theme) => this.handleThemeChange(theme),
-      onFilterChange: (filter) => this.handleFilterChange(filter),
-      onTriggerEvent: (state, zone, summary) => this.triggerManualSimEvent(state, zone, summary),
-      onResetCamera: () => this.centerWorkspace(),
+      onSelectExpression: (state) => this.applyExpressionToAll(state),
+      onRecenter: () => this.centerWorkspace(),
       onFpsToggle: (fps) => { this.fpsCap = fps; }
     });
 
-    // 6. Network Telemetry Bridge
-    // Detects query param ?ws= or ?sse=, else runs transparent mock fallback
+    // 6. Network Bridge & Telemetry
     const urlParams = new URLSearchParams(window.location.search);
     const customEndpoint = urlParams.get('ws') || urlParams.get('sse') || null;
 
@@ -79,150 +78,137 @@ class SamsVisualiserApp {
 
     this.setupNetworkEvents();
 
-    // 7. Render Loop and Timing
+    // 7. Loop Timing & Resize
     this.lastFrameTime = performance.now();
     this.elapsedTime = 0;
-    this.fpsAccumulator = 0;
     this.frameCount = 0;
     this.lastFpsUpdate = performance.now();
 
-    // 8. Event Listeners (Resize, Picking)
     this.handleResize();
     window.addEventListener('resize', () => this.handleResize());
     this.setupPickingEvents();
 
-    // Initial Center
     this.centerWorkspace();
 
-    // Start Loop
+    // Start Rendering Loop
     this.tick = this.tick.bind(this);
     requestAnimationFrame(this.tick);
   }
 
   /**
-   * Initializes baseline agent roster.
+   * Initializes the exact 6 robot characters from reference mockup.
    */
-  initAgents() {
-    const defaultRoster = [
-      {
-        id: 'agent_coder_01',
-        name: 'Coder 01',
-        role: 'Core Backend Engineer',
-        gridX: 3.0,
-        gridY: 5.0,
-        palette: AGENT_PALETTES[0],
-        state: 'active'
-      },
-      {
-        id: 'agent_researcher_02',
-        name: 'Research 02',
-        role: 'Vector RAG Specialist',
-        gridX: 9.0,
-        gridY: 1.5,
-        palette: AGENT_PALETTES[1],
-        state: 'researching'
-      },
-      {
-        id: 'agent_reviewer_03',
-        name: 'Reviewer 03',
-        role: 'QA & Security Sentinel',
-        gridX: 5.0,
-        gridY: 7.0,
-        palette: AGENT_PALETTES[2],
-        state: 'idle'
-      },
-      {
-        id: 'agent_sre_04',
-        name: 'SRE 04',
-        role: 'Infra & Turnstile Gatekeeper',
-        gridX: 1.5,
-        gridY: 1.5,
-        palette: AGENT_PALETTES[3],
-        state: 'success'
-      }
-    ];
-
-    defaultRoster.forEach(cfg => {
-      const agent = new RobotAgent({
-        id: cfg.id,
-        name: cfg.name,
-        role: cfg.role,
-        gridX: cfg.gridX,
-        gridY: cfg.gridY,
-        primaryColor: cfg.palette.primary,
-        darkColor: cfg.palette.dark,
-        initialState: cfg.state
-      });
-      this.agents.set(cfg.id, agent);
+  initReferenceRoster() {
+    // 1. TALL DIRECTOR ROBOT (Desk 01)
+    const director = new RobotAgent({
+      id: 'director_blue',
+      name: 'Lead Director',
+      role: 'System Architect & Operator',
+      gridX: 4.4,
+      gridY: 5.6,
+      isDirector: true, // Only director has the tall body
+      variant: 'director',
+      primaryColor: '#2563eb',
+      darkColor: '#1d4ed8',
+      initialState: 'active'
     });
+    this.agents.set(director.id, director);
+
+    // 2. RED / CORAL SUPERVISOR (Relaxing in Armchair)
+    const coral = new RobotAgent({
+      id: 'supervisor_coral',
+      name: 'Advisor Coral',
+      role: 'Relaxed Supervisor',
+      gridX: 1.0,
+      gridY: 6.8,
+      isDirector: false,
+      variant: 'seated_lounge',
+      primaryColor: '#ef4444',
+      darkColor: '#b91c1c',
+      initialState: 'active'
+    });
+    this.agents.set(coral.id, coral);
+
+    // 3. ORANGE CHIBI (Near Vault & Whiteboard with Antenna)
+    const orange = new RobotAgent({
+      id: 'worker_orange',
+      name: 'Vault Inspector',
+      role: 'Encryption Auditor',
+      gridX: 2.2,
+      gridY: 1.8,
+      isDirector: false,
+      variant: 'chibi_antenna',
+      primaryColor: '#f97316',
+      darkColor: '#c2410c',
+      initialState: 'researching'
+    });
+    this.agents.set(orange.id, orange);
+
+    // 4. DARK OLIVE GREEN CHIBI (Standing Center Floor)
+    const green = new RobotAgent({
+      id: 'worker_green',
+      name: 'Orchestrator',
+      role: 'General Flow Worker',
+      gridX: 4.8,
+      gridY: 3.4,
+      isDirector: false,
+      variant: 'chibi_center',
+      primaryColor: '#3f6212',
+      darkColor: '#1a2e05',
+      initialState: 'idle'
+    });
+    this.agents.set(green.id, green);
+
+    // 5. PURPLE CHIBI (At Kanban Wall with Raised Arm)
+    const purple = new RobotAgent({
+      id: 'worker_purple',
+      name: 'Kanban Scout',
+      role: 'Sprint Reconciler',
+      gridX: 7.5,
+      gridY: 1.4,
+      isDirector: false,
+      variant: 'chibi_kanban',
+      primaryColor: '#8b5cf6',
+      darkColor: '#6d28d9',
+      initialState: 'active'
+    });
+    this.agents.set(purple.id, purple);
+
+    // 6. MINT GREEN CHIBI (At Security Gate with Aerodynamic Wings)
+    const mint = new RobotAgent({
+      id: 'worker_mint',
+      name: 'Gatekeeper',
+      role: 'Turnstile Sentinel',
+      gridX: 8.4,
+      gridY: 5.8,
+      isDirector: false,
+      variant: 'chibi_gate',
+      primaryColor: '#10b981',
+      darkColor: '#047857',
+      initialState: 'success'
+    });
+    this.agents.set(mint.id, mint);
   }
 
-  /**
-   * Subscribes to EventBridge telemetry events.
-   */
   setupNetworkEvents() {
     this.bridge.on('connection_change', (conn) => {
       this.hud.setConnectionStatus(conn.state, conn.isMock ? 'MOCK TELEMETRY' : 'LIVE WS');
     });
 
     this.bridge.on('agent_event', (evt) => {
-      this.handleAgentTelemetry(evt);
-    });
-  }
-
-  /**
-   * Handles an incoming standardized telemetry packet.
-   * @param {Object} evt
-   */
-  handleAgentTelemetry(evt) {
-    let agent = this.agents.get(evt.agent_id);
-
-    // Dynamic agent registration if incoming agent is not yet in pool
-    if (!agent) {
-      const palette = AGENT_PALETTES[this.agents.size % AGENT_PALETTES.length];
-      agent = new RobotAgent({
-        id: evt.agent_id,
-        name: evt.agent_id.replace('agent_', '').replace('_', ' ').toUpperCase(),
-        gridX: 6,
-        gridY: 6,
-        primaryColor: palette.primary,
-        darkColor: palette.dark,
-        initialState: evt.state
-      });
-      this.agents.set(evt.agent_id, agent);
-    }
-
-    // Update state and task
-    agent.setExecutionState(evt.state, evt.target_zone, evt.task_summary);
-
-    // Move to target waypoint if zone specified
-    if (evt.target_zone) {
-      const wp = getWaypointForZone(evt.target_zone);
-      if (wp) {
-        agent.moveTo(wp.x, wp.y);
+      const agent = this.agents.get(evt.agent_id);
+      if (agent) {
+        agent.setExecutionState(evt.state, evt.target_zone, evt.task_summary);
       }
-    }
-
-    // Feed HUD
-    this.hud.pushTelemetryEvent(evt);
-    this.updateHudMetrics();
-  }
-
-  /**
-   * Updates HUD metric labels.
-   */
-  updateHudMetrics() {
-    let activeCount = 0;
-    this.agents.forEach(a => {
-      const st = a.visor.currentState;
-      if (st === 'active' || st === 'researching') activeCount++;
     });
-    this.hud.setAgentCounts(activeCount, this.agents.size);
   }
 
-  /**
-   * Handles window resize and canvas pixel density scaling.
-   */
+  applyExpressionToAll(state) {
+    this.agents.forEach(agent => {
+      agent.setExecutionState(state, agent.targetZone, `State changed to ${state}`);
+    });
+  }
+
   handleResize() {
     const dpr = window.devicePixelRatio || 1;
     const w = window.innerWidth;
@@ -235,80 +221,61 @@ class SamsVisualiserApp {
 
     this.ctx.resetTransform();
     this.ctx.scale(dpr, dpr);
-
     this.camera.resize(w, h);
   }
 
-  /**
-   * Centers the camera on the middle of the 12x12 isometric room.
-   */
   centerWorkspace() {
-    const centerScreen = this.engine.gridToScreen(6, 6, 0);
+    const centerScreen = this.engine.gridToScreen(5.0, 5.0, 0);
     this.camera.centerOn(centerScreen.x, centerScreen.y);
   }
 
-  /**
-   * Focuses the camera on a specific agent.
-   * @param {string} agentId
-   */
-  focusAgent(agentId) {
-    const agent = this.agents.get(agentId);
-    if (agent) {
-      this.agents.forEach(a => { a.selected = false; });
-      agent.selected = true;
-      const screenPos = this.engine.gridToScreen(agent.gridX, agent.gridY, agent.gridZ);
-      this.camera.centerOn(screenPos.x, screenPos.y, 1.4);
+  focusStation(stationId) {
+    const zone = WORKSTATION_ZONES[stationId.toUpperCase()];
+    if (zone) {
+      const screenPos = this.engine.gridToScreen(zone.center.x, zone.center.y, 0);
+      this.camera.centerOn(screenPos.x, screenPos.y, 1.8);
     }
   }
 
-  /**
-   * Sets up mouse interaction for entity picking and hover tooltips.
-   */
   setupPickingEvents() {
     this.canvas.addEventListener('mousemove', (e) => {
       const rect = this.canvas.getBoundingClientRect();
       const clientX = e.clientX - rect.left;
       const clientY = e.clientY - rect.top;
 
-      // Inverse projection to grid coordinates
       const worldPos = this.camera.screenToWorld(clientX, clientY);
       const gridPos = this.engine.screenToGrid(worldPos.x, worldPos.y);
       const gx = Math.floor(gridPos.x);
       const gy = Math.floor(gridPos.y);
 
-      if (gx >= 0 && gx < 12 && gy >= 0 && gy < 12) {
-        this.hoveredTile = { x: gx, y: gy };
-      } else {
-        this.hoveredTile = null;
-      }
+      this.hoveredTile = (gx >= 0 && gx < 10 && gy >= 0 && gy < 10) ? { x: gx, y: gy } : null;
 
-      // Check agent hover (proximity test in screen space)
+      // Check agent hover
       let foundAgent = null;
       for (const agent of this.agents.values()) {
         const agentScreen = this.engine.gridToScreen(agent.gridX, agent.gridY, agent.gridZ);
         const dist = Math.hypot(worldPos.x - agentScreen.x, worldPos.y - (agentScreen.y - 18));
-        if (dist < 20) {
+        if (dist < 22) {
           foundAgent = agent;
           break;
         }
       }
 
       if (foundAgent) {
-        this.hoveredEntity = foundAgent;
         this.hud.showTooltip(clientX, clientY, {
-          title: `${foundAgent.name} (${foundAgent.visor.currentState.toUpperCase()})`,
-          meta: foundAgent.role,
-          desc: `Task: ${foundAgent.taskSummary} | Zone: ${foundAgent.targetZone}`
+          title: foundAgent.name,
+          meta: foundAgent.role.toUpperCase(),
+          desc: `Status: ${foundAgent.visor.currentState.toUpperCase()} | ${foundAgent.isDirector ? 'Tall Mecha Model' : 'Chibi Worker'}`
         });
         return;
       }
 
-      // Check prop / zone hover
+      // Check zone hover
       const zone = getZoneAtGrid(gridPos.x, gridPos.y);
       if (zone) {
         this.hud.showTooltip(clientX, clientY, {
           title: zone.name,
-          meta: `ZONE TYPE: ${zone.type.toUpperCase()}`,
+          meta: `ZONE: ${zone.id.toUpperCase()}`,
           desc: zone.description
         });
         return;
@@ -316,56 +283,21 @@ class SamsVisualiserApp {
 
       this.hud.hideTooltip();
     });
-
-    this.canvas.addEventListener('click', (e) => {
-      if (this.camera.isDragging) return;
-      const rect = this.canvas.getBoundingClientRect();
-      const worldPos = this.camera.screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
-
-      for (const agent of this.agents.values()) {
-        const agentScreen = this.engine.gridToScreen(agent.gridX, agent.gridY, agent.gridZ);
-        const dist = Math.hypot(worldPos.x - agentScreen.x, worldPos.y - (agentScreen.y - 18));
-        if (dist < 24) {
-          this.focusAgent(agent.id);
-          break;
-        }
-      }
-    });
   }
 
-  handleThemeChange(theme) {
-    // Canvas background clears appropriately in render loop
-  }
-
-  handleFilterChange(filter) {
-    this.activeFilter = filter;
-  }
-
-  triggerManualSimEvent(state, zone, summary) {
-    const agentList = Array.from(this.agents.keys());
-    const randomAgent = agentList[Math.floor(Math.random() * agentList.length)];
-    this.bridge.sendManualEvent(randomAgent, state, zone, summary);
-  }
-
-  /**
-   * Main render tick with delta-time and FPS throttling.
-   * @param {number} timestamp
-   */
   tick(timestamp) {
     requestAnimationFrame(this.tick);
 
     const elapsedDelta = (timestamp - this.lastFrameTime) / 1000;
     const minFrameInterval = 1 / this.fpsCap;
 
-    if (elapsedDelta < minFrameInterval) {
-      return; // Cap frame rate to 30 or 60 FPS
-    }
+    if (elapsedDelta < minFrameInterval) return;
 
     this.lastFrameTime = timestamp;
-    const dt = Math.min(elapsedDelta, 0.1); // Guard against tab freeze bursts
+    const dt = Math.min(elapsedDelta, 0.1);
     this.elapsedTime += dt;
 
-    // FPS calculation
+    // FPS
     this.frameCount++;
     if (timestamp - this.lastFpsUpdate >= 1000) {
       const currentFps = (this.frameCount * 1000) / (timestamp - this.lastFpsUpdate);
@@ -374,76 +306,67 @@ class SamsVisualiserApp {
       this.lastFpsUpdate = timestamp;
     }
 
-    // 1. Update Camera & Entities
+    // Update Camera & Agents
     this.camera.update(dt);
     for (const agent of this.agents.values()) {
       agent.update(dt);
     }
 
-    // 2. Render Frame
+    // Sync floating badges with camera
+    this.hud.updateBadgePositions(this.engine, this.camera);
+
+    // Render Canvas Frame
     this.render();
   }
 
-  /**
-   * Renders the complete isometric frame.
-   */
   render() {
     const ctx = this.ctx;
     const w = this.camera.width;
     const h = this.camera.height;
 
-    // Clear background
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    ctx.fillStyle = isLight ? '#f1f5f9' : '#090d16';
+    // Clear background to clean blueprint soft cyan
+    ctx.fillStyle = '#e0f2fe';
     ctx.fillRect(0, 0, w, h);
 
-    // Apply Camera transform
+    // Camera Transform
     this.camera.applyTransform(ctx);
 
-    // 1. Render Floor Grid and perimeter cutaway walls
+    // 1. Room Walls & Clean Tiled Floor
     this.room.renderPerimeterWalls(ctx);
     this.room.renderFloor(ctx, this.hoveredTile);
 
-    // 2. Collect Renderables for Depth Sorting (Props + Robot Agents)
+    // 2. Depth-sorted Renderables (Props + Robots)
     const renderQueue = [];
 
     // Add Props
     for (const prop of this.props) {
       const screenPos = this.engine.gridToScreen(prop.gridX, prop.gridY, prop.gridZ || 0);
       renderQueue.push({
-        type: 'prop',
         depthKey: this.engine.getDepthKey(prop.gridX, prop.gridY, prop.gridZ || 0, 1),
         draw: () => prop.render(ctx, screenPos, this.elapsedTime)
       });
     }
 
-    // Add Agents (filtered by activeFilter)
+    // Add Agents
     for (const agent of this.agents.values()) {
-      if (this.activeFilter !== 'all' && agent.visor.currentState !== this.activeFilter) {
-        continue;
-      }
       const screenPos = this.engine.gridToScreen(agent.gridX, agent.gridY, agent.gridZ);
       renderQueue.push({
-        type: 'agent',
         depthKey: this.engine.getDepthKey(agent.gridX, agent.gridY, agent.gridZ, 2),
         draw: () => agent.render(ctx, screenPos, this.elapsedTime)
       });
     }
 
-    // Depth sort: back-to-front drawing order
+    // Sort back-to-front
     this.engine.sortDepth(renderQueue);
 
-    // Draw all depth-sorted renderables
     for (let i = 0; i < renderQueue.length; i++) {
       renderQueue[i].draw();
     }
 
-    // Restore Camera transform
     this.camera.restoreTransform(ctx);
   }
 }
 
-// Bootstrap on DOM readiness
 window.addEventListener('DOMContentLoaded', () => {
   window.__samsApp = new SamsVisualiserApp();
 });

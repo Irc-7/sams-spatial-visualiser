@@ -1,100 +1,73 @@
 /**
  * SAMS Spatial Agentic Visualiser - Workstations & Zone Registry
- * Metadata, spatial bounds, waypoints, and interaction radii for workspace hubs.
+ * Matching reference diorama 5 core interactive stations.
  */
 
 export const WORKSTATION_ZONES = {
-  VAULT_ENCLAVE: {
-    id: 'vault_enclave',
-    name: 'Secure Enclave & Vault',
-    type: 'security_infra',
-    bounds: { minX: 0, maxX: 3, minY: 0, maxY: 3 },
-    center: { x: 1.5, y: 1.5 },
-    waypoints: [
-      { x: 1.5, y: 1.5, label: 'Vault Mainframe' },
-      { x: 2.5, y: 1.0, label: 'Cold Storage Terminal' }
-    ],
-    color: '#0284c7', // Sky Blue / Cyan
-    theme: 'vault',
-    description: 'High-security zero-trust compute core with air-gapped server racks.'
+  VAULT: {
+    id: 'vault',
+    name: 'Vault',
+    icon: 'shield',
+    bounds: { minX: 0, maxX: 2.2, minY: 1.5, maxY: 4.0 },
+    center: { x: 0.8, y: 2.5 },
+    waypoints: [{ x: 1.6, y: 2.8, label: 'Vault Entry' }],
+    color: '#334155',
+    description: 'Heavy industrial reinforced steel safe storing encrypted keys and credentials.'
   },
-  COMPUTE_POD_A: {
-    id: 'compute_pod_a',
-    name: 'Compute Island Pod Alpha',
-    type: 'development_core',
-    bounds: { minX: 2, maxX: 4, minY: 4, maxY: 6 },
-    center: { x: 3.0, y: 5.0 },
-    waypoints: [
-      { x: 3.0, y: 4.5, label: 'Dual-Monitor Desk 01' },
-      { x: 3.5, y: 5.5, label: 'Dual-Monitor Desk 02' }
-    ],
-    color: '#2563eb', // Indigo Blue
-    theme: 'compute',
-    description: 'High-density developer workstations with telemetry HUDs.'
+  WHITEBOARD: {
+    id: 'whiteboard',
+    name: 'Whiteboard',
+    icon: 'board',
+    bounds: { minX: 3.0, maxX: 5.8, minY: 0, maxY: 2.0 },
+    center: { x: 4.2, y: 0.5 },
+    waypoints: [{ x: 4.2, y: 1.8, label: 'Architecture Board' }],
+    color: '#0284c7',
+    description: 'Mobile dry-erase whiteboard with system architecture and flowchart diagrams.'
   },
-  COMPUTE_POD_B: {
-    id: 'compute_pod_b',
-    name: 'Compute Island Pod Beta',
-    type: 'analytics_core',
-    bounds: { minX: 4, maxX: 6, minY: 6, maxY: 8 },
-    center: { x: 5.0, y: 7.0 },
-    waypoints: [
-      { x: 4.5, y: 6.5, label: 'Analytics Station' },
-      { x: 5.5, y: 7.5, label: 'Model Evaluation Node' }
-    ],
-    color: '#7c3aed', // Purple
-    theme: 'compute',
-    description: 'Distributed inference nodes and real-time model evaluation pod.'
+  KANBAN_WALL: {
+    id: 'kanban_wall',
+    name: 'Kanban Wall',
+    icon: 'grid',
+    bounds: { minX: 6.5, maxX: 9.5, minY: 0, maxY: 2.0 },
+    center: { x: 7.8, y: 0.3 },
+    waypoints: [{ x: 7.8, y: 1.6, label: 'Sprint Board' }],
+    color: '#8b5cf6',
+    description: 'Agile project management board with 4-column sprint tickets.'
   },
-  STRATEGY_WALL: {
-    id: 'strategy_wall',
-    name: 'Strategy Wall & Sprint Kanban',
-    type: 'orchestration',
-    bounds: { minX: 7, maxX: 11, minY: 0, maxY: 3 },
-    center: { x: 9.0, y: 1.5 },
+  DESK_01: {
+    id: 'desk_01',
+    name: 'Desk 01',
+    icon: 'monitor',
+    bounds: { minX: 3.2, maxX: 5.8, minY: 4.2, maxY: 7.2 },
+    center: { x: 4.4, y: 5.6 },
     waypoints: [
-      { x: 8.5, y: 1.5, label: 'Sprint Kanban Board' },
-      { x: 10.0, y: 1.5, label: 'Architecture Whiteboard' }
+      { x: 4.4, y: 6.2, label: 'Desk 01 Operator Chair' }
     ],
-    color: '#f59e0b', // Amber
-    theme: 'strategy',
-    description: 'Autonomous agent task orchestration and multi-agent sprint board.'
+    color: '#2563eb',
+    description: 'Executive wooden workstation with dual green-code monitors, operated by Lead Director.'
   },
-  BIOPHILIC_LOUNGE: {
-    id: 'biophilic_lounge',
-    name: 'Biophilic Breakout Lounge',
-    type: 'relaxation_research',
-    bounds: { minX: 1, maxX: 4, minY: 9, maxY: 11 },
-    center: { x: 2.5, y: 10.0 },
-    waypoints: [
-      { x: 2.0, y: 10.0, label: 'Sectional Sofa Lounge' },
-      { x: 3.2, y: 9.8, label: 'Coffee Station & Flora' }
-    ],
-    color: '#10b981', // Emerald
-    theme: 'lounge',
-    description: 'Acoustic calm sanctuary with Monstera planters and marble coffee desk.'
+  SECURITY_GATE: {
+    id: 'security_gate',
+    name: 'Security Gate',
+    icon: 'lock',
+    bounds: { minX: 7.5, maxX: 9.8, minY: 4.0, maxY: 7.0 },
+    center: { x: 8.6, y: 5.2 },
+    waypoints: [{ x: 8.0, y: 5.2, label: 'Access Control Turnstile' }],
+    color: '#10b981',
+    description: 'Automated biometric and RFID turnstile entrance portal.'
   },
-  PERIMETER_GATES: {
-    id: 'perimeter_gates',
-    name: 'Speed-Gate Security Turnstiles',
-    type: 'access_control',
-    bounds: { minX: 9, maxX: 11, minY: 9, maxY: 11 },
-    center: { x: 10.0, y: 10.0 },
-    waypoints: [
-      { x: 10.0, y: 10.0, label: 'Laser Turnstile Gate' }
-    ],
-    color: '#ef4444', // Red
-    theme: 'turnstiles',
-    description: 'Biometric ingress/egress speed gates with optical optical security.'
+  LOUNGE: {
+    id: 'lounge',
+    name: 'Lounge Area',
+    icon: 'coffee',
+    bounds: { minX: 0.2, maxX: 2.2, minY: 6.0, maxY: 9.2 },
+    center: { x: 1.0, y: 6.8 },
+    waypoints: [{ x: 1.0, y: 6.8, label: 'Armchair' }],
+    color: '#ef4444',
+    description: 'Relaxation lounge with modern cube armchair and ceramic coffee side table.'
   }
 };
 
-/**
- * Returns zone info given grid coordinates X and Y.
- * @param {number} x
- * @param {number} y
- * @returns {Object|null}
- */
 export function getZoneAtGrid(x, y) {
   for (const key in WORKSTATION_ZONES) {
     const zone = WORKSTATION_ZONES[key];
@@ -106,11 +79,6 @@ export function getZoneAtGrid(x, y) {
   return null;
 }
 
-/**
- * Finds the closest waypoint for a specified target zone ID.
- * @param {string} zoneId
- * @returns {{x: number, y: number, label: string}|null}
- */
 export function getWaypointForZone(zoneId) {
   const normalized = zoneId ? zoneId.toLowerCase() : '';
   for (const key in WORKSTATION_ZONES) {
@@ -119,6 +87,5 @@ export function getWaypointForZone(zoneId) {
       return zone.waypoints[Math.floor(Math.random() * zone.waypoints.length)];
     }
   }
-  // Default to center if not found
-  return { x: 6, y: 6, label: 'Central Corridor' };
+  return { x: 5, y: 5, label: 'Central Corridor' };
 }
