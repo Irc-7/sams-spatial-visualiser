@@ -296,8 +296,8 @@ class SamsVisualiserApp {
     const w = this.camera.width;
     const h = this.camera.height;
 
-    // Clear background to clean pale blue graph canvas
-    ctx.fillStyle = '#e4f1fc';
+    // Clear background to clean pale blue graph canvas (Gambar 2)
+    ctx.fillStyle = '#dbeafe';
     ctx.fillRect(0, 0, w, h);
 
     // Camera Transform

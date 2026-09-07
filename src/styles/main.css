@@ -1,20 +1,20 @@
 /* ==========================================================================
-   SAMS Spatial Agentic Visualiser - Pure Workspace & Job Callouts Theme
-   Zero titles, zero logos, zero headers. Pure diorama workspace, robot models,
-   and delicate task callouts matching the reference design.
+   SAMS Spatial Agentic Visualiser - Neo-Retro Isometric Pixel Art Stylesheet
+   Matching Gambar 2:
+   - Soft cool sky-blue blueprint background grid
+   - Minimalist floating station badges ([Icon] Name)
+   - Zero headers, zero titles, zero logos, zero docks
+   - Pure diorama pixel-art workspace
    ========================================================================== */
 
 :root {
-  /* Pale Blue Blueprint Graph Paper Palette */
-  --bg-blueprint: #e4f1fc;
-  --grid-line: rgba(56, 189, 248, 0.24);
-  --bg-card: rgba(255, 255, 255, 0.88);
-  --bg-card-solid: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.82);
-  --bg-glass-blur: blur(12px);
+  /* Soft Cool Sky-Blue Blueprint Palette (Gambar 2) */
+  --bg-sky-blueprint: #dbeafe;
+  --grid-line: rgba(59, 130, 246, 0.18);
 
+  --bg-pill: rgba(255, 255, 255, 0.88);
   --border-pill: rgba(255, 255, 255, 0.95);
-  --shadow-callout: 0 4px 14px -2px rgba(15, 23, 42, 0.09), 0 0 1px 1px rgba(255, 255, 255, 0.9);
+  --shadow-pill: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.9);
 
   --text-dark: #0f172a;
   --text-sub: #64748b;
@@ -33,11 +33,11 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--bg-blueprint);
+  background-color: var(--bg-sky-blueprint);
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 26px 26px;
+  background-size: 24px 24px;
   font-family: var(--font-sans);
   user-select: none;
   -webkit-font-smoothing: antialiased;
@@ -59,6 +59,7 @@ canvas#viewportCanvas {
   display: block;
   cursor: grab;
   outline: none;
+  image-rendering: pixelated; /* Crisp pixel art rendering */
 }
 
 canvas#viewportCanvas:active {
@@ -66,79 +67,51 @@ canvas#viewportCanvas:active {
 }
 
 /* ==========================================================================
-   FLOATING JOB CALLOUT PILLS (e.g. [•] [Icon] Desk 01 / Active Compute)
+   FLOATING STATION PILLS ([Icon] Label) - Exact Match Gambar 2
    ========================================================================== */
-.job-callout-pill {
+.station-badge-pill {
   position: absolute;
   pointer-events: auto;
   z-index: 25;
-  background: var(--bg-glass);
-  backdrop-filter: var(--bg-glass-blur);
+  background: var(--bg-pill);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--border-pill);
   border-radius: 999px;
-  padding: 4px 12px 4px 10px;
+  padding: 5px 13px;
   display: flex;
   align-items: center;
   gap: 7px;
-  box-shadow: var(--shadow-callout);
+  box-shadow: var(--shadow-pill);
   transform: translate(-50%, -100%);
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   white-space: nowrap;
 }
 
-.job-callout-pill:hover {
+.station-badge-pill:hover {
   background: #ffffff;
-  transform: translate(-50%, -105%) scale(1.03);
-  box-shadow: 0 6px 18px -2px rgba(15, 23, 42, 0.14);
+  transform: translate(-50%, -104%) scale(1.04);
+  box-shadow: 0 6px 16px -2px rgba(15, 23, 42, 0.12);
 }
 
-.callout-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.callout-icon {
-  width: 12px;
-  height: 12px;
+.badge-icon {
+  width: 13px;
+  height: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #475569;
-  flex-shrink: 0;
+  color: #334155;
 }
 
-.callout-texts {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.callout-name {
-  font-size: 0.74rem;
-  font-weight: 800;
+.badge-label {
+  font-size: 0.76rem;
+  font-weight: 700;
   color: var(--text-dark);
   letter-spacing: -0.2px;
 }
 
-.callout-sep {
-  font-size: 0.68rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.callout-sub {
-  font-size: 0.70rem;
-  color: var(--text-sub);
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: -0.1px;
-}
-
 /* ==========================================================================
-   MINIMAL SPATIAL TOOLTIP
+   MINIMAL HOVER TOOLTIP
    ========================================================================== */
 .spatial-tooltip {
   position: absolute;
@@ -152,7 +125,7 @@ canvas#viewportCanvas:active {
   transform: translate(-50%, -100%) translateY(-12px);
   opacity: 0;
   transition: opacity 0.12s ease, transform 0.12s ease;
-  min-width: 150px;
+  min-width: 140px;
 }
 
 .spatial-tooltip.visible {

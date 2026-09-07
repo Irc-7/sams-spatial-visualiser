@@ -1,7 +1,9 @@
 /**
  * SAMS Spatial Agentic Visualiser - Room Architecture
- * Pale blue-gray tiled office room diorama with cutaway perimeter walls,
- * doorway portal, and clean isometric perspective matching reference mockup.
+ * Neo-Retro Isometric Pixel Art Room Diorama (Matching Gambar 2):
+ * - Crisp dark structural outlines & baseboard trim
+ * - Pale blue-gray isometric floor tiles with precise pixel grid grout
+ * - Clean cutaway walls and architectural doorway threshold on the right
  */
 
 export class RoomArchitecture {
@@ -11,30 +13,36 @@ export class RoomArchitecture {
    */
   constructor(engine, options = {}) {
     this.engine = engine;
-    this.gridSize = options.gridSize || 10; // 10x10 compact diorama grid
-    this.wallHeight = options.wallHeight || 80;
+    this.gridSize = options.gridSize || 10;
+    this.wallHeight = options.wallHeight || 82;
 
+    // 16/32-bit pixel art diorama color palette
     this.palette = {
-      // Clean, light tech office walls
-      wallFaceY: '#e2e8f0',
-      wallFaceX: '#cbd5e1',
+      // Pixel outlines & structural bounds
+      outline: '#1e293b',
+      outlineSoft: 'rgba(30, 41, 59, 0.65)',
+
+      // Walls (stepped cel-shading tones)
+      wallLeftFace: '#cbd5e1',     // Shadowed wall
+      wallRightFace: '#e2e8f0',    // Light wall
       wallTopCap: '#f8fafc',
-      wallBaseboard: '#94a3b8',
-      doorwayFrame: '#f1f5f9',
+      wallBaseboard: '#475569',
+      wallBaseboardDark: '#334155',
 
-      // Floor tiles: Pale blue-gray
-      tileA: '#f1f5f9',
-      tileB: '#e2e8f0',
-      tileLine: 'rgba(148, 163, 184, 0.45)',
+      // Floor tiles: Pale grayish-blue
+      tileTopA: '#f1f5f9',
+      tileTopB: '#e2e8f0',
+      tileGridGrout: 'rgba(100, 116, 139, 0.4)',
 
-      // Foundation drop edge
-      slabSouth: '#64748b',
-      slabEast: '#475569'
+      // Room foundation slab drop-edges
+      slabFaceLeft: '#64748b',
+      slabFaceRight: '#475569',
+      slabBottomOutline: '#0f172a'
     };
   }
 
   /**
-   * Renders the cutaway perimeter walls on Y=0 and X=0 plus the right-side doorway.
+   * Renders perimeter cutaway walls with crisp pixel-art linework and doorway portal.
    * @param {CanvasRenderingContext2D} ctx
    */
   renderPerimeterWalls(ctx) {
@@ -42,160 +50,188 @@ export class RoomArchitecture {
     const halfH = this.engine.halfHeight;
     const wallH = this.wallHeight;
 
-    // 1. Wall on Y = 0 (Back-left to Back-right along X axis)
+    // 1. Back Wall on Y = 0 (runs along X axis)
     for (let x = 0; x < this.gridSize; x++) {
-      const topStart = this.engine.gridToScreen(x, 0, 0);
-      const topEnd = this.engine.gridToScreen(x + 1, 0, 0);
+      const p1 = this.engine.gridToScreen(x, 0, 0);
+      const p2 = this.engine.gridToScreen(x + 1, 0, 0);
 
-      // Main wall face
-      ctx.fillStyle = (x % 2 === 0) ? this.palette.wallFaceY : '#f1f5f9';
+      // Wall Facade Panel (cel-shaded solid)
+      ctx.fillStyle = (x % 2 === 0) ? this.palette.wallRightFace : '#edf2f7';
       ctx.beginPath();
-      ctx.moveTo(topStart.x, topStart.y);
-      ctx.lineTo(topEnd.x, topEnd.y);
-      ctx.lineTo(topEnd.x, topEnd.y - wallH);
-      ctx.lineTo(topStart.x, topStart.y - wallH);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p2.x, p2.y - wallH);
+      ctx.lineTo(p1.x, p1.y - wallH);
       ctx.closePath();
       ctx.fill();
 
-      // Top Wall Cap
+      // Top Edge Cap (Specular highlight strip)
       ctx.fillStyle = this.palette.wallTopCap;
       ctx.beginPath();
-      ctx.moveTo(topStart.x, topStart.y - wallH);
-      ctx.lineTo(topEnd.x, topEnd.y - wallH);
-      ctx.lineTo(topEnd.x - halfW * 0.18, topEnd.y - wallH - halfH * 0.18);
-      ctx.lineTo(topStart.x - halfW * 0.18, topStart.y - wallH - halfH * 0.18);
+      ctx.moveTo(p1.x, p1.y - wallH);
+      ctx.lineTo(p2.x, p2.y - wallH);
+      ctx.lineTo(p2.x - halfW * 0.16, p2.y - wallH - halfH * 0.16);
+      ctx.lineTo(p1.x - halfW * 0.16, p1.y - wallH - halfH * 0.16);
       ctx.closePath();
       ctx.fill();
 
-      // Baseboard
+      // Baseboard Trim
       ctx.fillStyle = this.palette.wallBaseboard;
       ctx.beginPath();
-      ctx.moveTo(topStart.x, topStart.y);
-      ctx.lineTo(topEnd.x, topEnd.y);
-      ctx.lineTo(topEnd.x, topEnd.y - 7);
-      ctx.lineTo(topStart.x, topStart.y - 7);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p2.x, p2.y - 8);
+      ctx.lineTo(p1.x, p1.y - 8);
       ctx.closePath();
       ctx.fill();
 
-      // Panel joint seam line
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+      // Pixel Art Seam Lines
+      ctx.strokeStyle = this.palette.outlineSoft;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(topEnd.x, topEnd.y);
-      ctx.lineTo(topEnd.x, topEnd.y - wallH);
+      ctx.moveTo(p2.x, p2.y);
+      ctx.lineTo(p2.x, p2.y - wallH);
+      ctx.stroke();
+
+      // Top cap outline
+      ctx.strokeStyle = this.palette.outline;
+      ctx.beginPath();
+      ctx.moveTo(p1.x - halfW * 0.16, p1.y - wallH - halfH * 0.16);
+      ctx.lineTo(p2.x - halfW * 0.16, p2.y - wallH - halfH * 0.16);
       ctx.stroke();
     }
 
-    // 2. Wall on X = 0 (Back-left to Fore-left along Y axis)
+    // 2. Left Wall on X = 0 (runs along Y axis)
     for (let y = 0; y < this.gridSize; y++) {
-      const topStart = this.engine.gridToScreen(0, y, 0);
-      const topEnd = this.engine.gridToScreen(0, y + 1, 0);
+      const p1 = this.engine.gridToScreen(0, y, 0);
+      const p2 = this.engine.gridToScreen(0, y + 1, 0);
 
-      ctx.fillStyle = (y % 2 === 0) ? this.palette.wallFaceX : '#94a3b8';
+      ctx.fillStyle = (y % 2 === 0) ? this.palette.wallLeftFace : '#94a3b8';
       ctx.beginPath();
-      ctx.moveTo(topStart.x, topStart.y);
-      ctx.lineTo(topEnd.x, topEnd.y);
-      ctx.lineTo(topEnd.x, topEnd.y - wallH);
-      ctx.lineTo(topStart.x, topStart.y - wallH);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p2.x, p2.y - wallH);
+      ctx.lineTo(p1.x, p1.y - wallH);
       ctx.closePath();
       ctx.fill();
 
-      // Top Wall Cap
+      // Top Cap
       ctx.fillStyle = '#e2e8f0';
       ctx.beginPath();
-      ctx.moveTo(topStart.x, topStart.y - wallH);
-      ctx.lineTo(topEnd.x, topEnd.y - wallH);
-      ctx.lineTo(topEnd.x + halfW * 0.18, topEnd.y - wallH - halfH * 0.18);
-      ctx.lineTo(topStart.x + halfW * 0.18, topStart.y - wallH - halfH * 0.18);
+      ctx.moveTo(p1.x, p1.y - wallH);
+      ctx.lineTo(p2.x, p2.y - wallH);
+      ctx.lineTo(p2.x + halfW * 0.16, p2.y - wallH - halfH * 0.16);
+      ctx.lineTo(p1.x + halfW * 0.16, p1.y - wallH - halfH * 0.16);
       ctx.closePath();
       ctx.fill();
 
       // Baseboard
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = this.palette.wallBaseboardDark;
       ctx.beginPath();
-      ctx.moveTo(topStart.x, topStart.y);
-      ctx.lineTo(topEnd.x, topEnd.y);
-      ctx.lineTo(topEnd.x, topEnd.y - 7);
-      ctx.lineTo(topStart.x, topStart.y - 7);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p2.x, p2.y - 8);
+      ctx.lineTo(p1.x, p1.y - 8);
       ctx.closePath();
       ctx.fill();
 
-      ctx.strokeStyle = 'rgba(100, 116, 139, 0.35)';
+      ctx.strokeStyle = this.palette.outlineSoft;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(topEnd.x, topEnd.y);
-      ctx.lineTo(topEnd.x, topEnd.y - wallH);
+      ctx.moveTo(p2.x, p2.y);
+      ctx.lineTo(p2.x, p2.y - wallH);
       ctx.stroke();
     }
 
-    // 3. Right-side Architectural Doorway (Portal at X=gridSize, Y=3..5)
+    // Outer perimeter top structural line
+    const origin = this.engine.gridToScreen(0, 0, 0);
+    const cornerX = this.engine.gridToScreen(this.gridSize, 0, 0);
+    const cornerY = this.engine.gridToScreen(0, this.gridSize, 0);
+
+    ctx.strokeStyle = this.palette.outline;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(origin.x, origin.y - wallH);
+    ctx.lineTo(cornerX.x, cornerX.y - wallH);
+    ctx.moveTo(origin.x, origin.y - wallH);
+    ctx.lineTo(cornerY.x, cornerY.y - wallH);
+    ctx.stroke();
+
+    // 3. Right-side Architectural Doorway (Threshold at X=gridSize, Y=3.0..5.5)
     this.renderDoorwayPortal(ctx);
   }
 
   /**
-   * Renders the doorway frame leading out of the room at the right perimeter.
+   * Renders the crisp pixel-art doorway portal at the right entrance boundary.
    * @param {CanvasRenderingContext2D} ctx
    */
   renderDoorwayPortal(ctx) {
     const doorX = this.gridSize - 0.05;
     const doorY = 3.2;
     const p1 = this.engine.gridToScreen(doorX, doorY, 0);
-    const p2 = this.engine.gridToScreen(doorX, doorY + 2.2, 0);
-    const doorHeight = 72;
+    const p2 = this.engine.gridToScreen(doorX, doorY + 2.3, 0);
+    const doorH = 74;
 
-    // Doorway opening depth cut
+    // Door Recess Opening
     ctx.fillStyle = '#94a3b8';
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
-    ctx.lineTo(p2.x, p2.y - doorHeight);
-    ctx.lineTo(p1.x, p1.y - doorHeight);
+    ctx.lineTo(p2.x, p2.y - doorH);
+    ctx.lineTo(p1.x, p1.y - doorH);
     ctx.closePath();
     ctx.fill();
 
-    // Door Frame Pillars
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(p1.x - 3, p1.y - doorHeight, 6, doorHeight);
-    ctx.fillRect(p2.x - 3, p2.y - doorHeight, 6, doorHeight);
-
-    // Lintel Header Beam
+    // Architectural Door Frame Posts (Dark outline + white finish)
     ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = this.palette.outline;
+    ctx.lineWidth = 1.2;
+
+    // Left Frame Post
+    ctx.fillRect(p1.x - 3, p1.y - doorH, 6, doorH);
+    ctx.strokeRect(p1.x - 3, p1.y - doorH, 6, doorH);
+
+    // Right Frame Post
+    ctx.fillRect(p2.x - 3, p2.y - doorH, 6, doorH);
+    ctx.strokeRect(p2.x - 3, p2.y - doorH, 6, doorH);
+
+    // Top Lintel Header
     ctx.beginPath();
-    ctx.moveTo(p1.x - 3, p1.y - doorHeight);
-    ctx.lineTo(p2.x + 3, p2.y - doorHeight);
-    ctx.lineTo(p2.x + 3, p2.y - doorHeight - 8);
-    ctx.lineTo(p1.x - 3, p1.y - doorHeight - 8);
+    ctx.moveTo(p1.x - 3, p1.y - doorH);
+    ctx.lineTo(p2.x + 3, p2.y - doorH);
+    ctx.lineTo(p2.x + 3, p2.y - doorH - 8);
+    ctx.lineTo(p1.x - 3, p1.y - doorH - 8);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Glass panel indication inside door
-    ctx.fillStyle = 'rgba(186, 230, 253, 0.4)';
+    // Translucent Glass Threshold Panels
+    ctx.fillStyle = 'rgba(186, 230, 253, 0.45)';
     ctx.beginPath();
     ctx.moveTo(p1.x + 3, p1.y - 4);
     ctx.lineTo(p2.x - 3, p2.y - 4);
-    ctx.lineTo(p2.x - 3, p2.y - doorHeight + 4);
-    ctx.lineTo(p1.x + 3, p1.y - doorHeight + 4);
+    ctx.lineTo(p2.x - 3, p2.y - doorH + 4);
+    ctx.lineTo(p1.x + 3, p1.y - doorH + 4);
     ctx.closePath();
     ctx.fill();
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+    ctx.stroke();
   }
 
   /**
-   * Renders the pale blue-gray tiled floor grid.
+   * Renders the pale blue-gray tiled floor grid with crisp pixel outlines and foundation drop-slab.
    * @param {CanvasRenderingContext2D} ctx
    * @param {Object} [hoveredTile=null]
    */
   renderFloor(ctx, hoveredTile = null) {
-    // 1. Foundation Slab drop shadows
+    // 1. Foundation Slab Drop Thickness (Diorama cutaway base)
     const leftCorner = this.engine.gridToScreen(0, this.gridSize, 0);
     const bottomCorner = this.engine.gridToScreen(this.gridSize, this.gridSize, 0);
     const rightCorner = this.engine.gridToScreen(this.gridSize, 0, 0);
     const slabHeight = 16;
 
-    // South-west slab edge
-    ctx.fillStyle = this.palette.slabSouth;
+    // South-west face
+    ctx.fillStyle = this.palette.slabFaceLeft;
     ctx.beginPath();
     ctx.moveTo(leftCorner.x, leftCorner.y);
     ctx.lineTo(bottomCorner.x, bottomCorner.y);
@@ -204,8 +240,8 @@ export class RoomArchitecture {
     ctx.closePath();
     ctx.fill();
 
-    // South-east slab edge
-    ctx.fillStyle = this.palette.slabEast;
+    // South-east face
+    ctx.fillStyle = this.palette.slabFaceRight;
     ctx.beginPath();
     ctx.moveTo(bottomCorner.x, bottomCorner.y);
     ctx.lineTo(rightCorner.x, rightCorner.y);
@@ -214,19 +250,33 @@ export class RoomArchitecture {
     ctx.closePath();
     ctx.fill();
 
-    // 2. Uniform pale blue-gray floor tiles
+    // Slab perimeter outline
+    ctx.strokeStyle = this.palette.slabBottomOutline;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(leftCorner.x, leftCorner.y);
+    ctx.lineTo(leftCorner.x, leftCorner.y + slabHeight);
+    ctx.lineTo(bottomCorner.x, bottomCorner.y + slabHeight);
+    ctx.lineTo(rightCorner.x, rightCorner.y + slabHeight);
+    ctx.lineTo(rightCorner.x, rightCorner.y);
+    ctx.moveTo(bottomCorner.x, bottomCorner.y);
+    ctx.lineTo(bottomCorner.x, bottomCorner.y + slabHeight);
+    ctx.stroke();
+
+    // 2. Uniform Pale Blue-Gray Isometric Tiles
     for (let y = 0; y < this.gridSize; y++) {
       for (let x = 0; x < this.gridSize; x++) {
         const pos = this.engine.gridToScreen(x, y, 0);
         const isOdd = (x + y) % 2 === 0;
         const isHovered = hoveredTile && hoveredTile.x === x && hoveredTile.y === y;
 
-        ctx.fillStyle = isHovered ? '#bae6fd' : (isOdd ? this.palette.tileA : this.palette.tileB);
+        ctx.fillStyle = isHovered ? '#bae6fd' : (isOdd ? this.palette.tileTopA : this.palette.tileTopB);
         this.engine.drawTileDiamond(ctx, pos.x, pos.y);
         ctx.fill();
 
-        ctx.strokeStyle = isHovered ? '#0284c7' : this.palette.tileLine;
-        ctx.lineWidth = isHovered ? 1.5 : 0.8;
+        // Crisp pixel grid grout line
+        ctx.strokeStyle = isHovered ? '#0284c7' : this.palette.tileGridGrout;
+        ctx.lineWidth = isHovered ? 1.4 : 0.8;
         ctx.stroke();
       }
     }
