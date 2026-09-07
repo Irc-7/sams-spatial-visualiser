@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAMS - Agent Robot Model Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-sub: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.08) 0%, transparent 60%),
+        linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .viewer-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.04);
+      width: 100%;
+      max-width: 480px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+
+    /* Stage Canvas */
+    .canvas-box {
+      width: 300px;
+      height: 300px;
+      position: relative;
+      margin-bottom: 24px;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Controls Panel */
+    .control-group {
+      width: 100%;
+      margin-bottom: 18px;
+    }
+    .group-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    /* Visor States Selector */
+    .state-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .btn-state {
+      background: #f1f5f9;
+      border: 1px solid transparent;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-state:hover {
+      background: #e2e8f0;
+    }
+    .btn-state.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    /* Color Swatches */
+    .color-picker {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 0 1px var(--border);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .swatch:hover {
+      transform: scale(1.1);
+    }
+    .swatch.selected {
+      box-shadow: 0 0 0 2px var(--text);
+      transform: scale(1.12);
+    }
+
+    /* Animation Toggles */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .btn-action {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 9px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-action:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    .btn-action.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="viewer-card">
+    <div class="header">
+      <h1>SAMS Agent Model</h1>
+      <p>Modular Chibi Robot with Interactive LED Visor</p>
+    </div>
+
+    <!-- Canvas Robot Rendering -->
+    <div class="canvas-box">
+      <canvas id="robotCanvas"></canvas>
+    </div>
+
+    <!-- State Switcher -->
+    <div class="control-group">
+      <span class="group-label">Visor States</span>
+      <div class="state-buttons">
+        <button class="btn-state active" onclick="setVisorState('active', this)">Active</button>
+        <button class="btn-state" onclick="setVisorState('idle', this)">Idle</button>
+        <button class="btn-state" onclick="setVisorState('researching', this)">Researching</button>
+        <button class="btn-state" onclick="setVisorState('success', this)">Success</button>
+        <button class="btn-state" onclick="setVisorState('error', this)">Error</button>
+        <button class="btn-state" onclick="setVisorState('offline', this)">Offline</button>
+      </div>
+    </div>
+
+    <!-- Theme / Role Color -->
+    <div class="control-group">
+      <span class="group-label">Body Role Color</span>
+      <div class="color-picker">
+        <div class="swatch selected" style="background: #2563eb;" onclick="setColor('#2563eb', '#1d4ed8', this)"></div>
+        <div class="swatch" style="background: #f97316;" onclick="setColor('#f97316', '#ea580c', this)"></div>
+        <div class="swatch" style="background: #8b5cf6;" onclick="setColor('#8b5cf6', '#7c3aed', this)"></div>
+        <div class="swatch" style="background: #10b981;" onclick="setColor('#10b981', '#059669', this)"></div>
+        <div class="swatch" style="background: #ef4444;" onclick="setColor('#ef4444', '#dc2626', this)"></div>
+        <div class="swatch" style="background: #14b8a6;" onclick="setColor('#14b8a6', '#0d9488', this)"></div>
+      </div>
+    </div>
+
+    <!-- Animation Mode -->
+    <div class="control-group" style="margin-bottom: 0;">
+      <span class="group-label">Motion Cycle</span>
+      <div class="action-row">
+        <button class="btn-action active" id="btnBreath" onclick="setMotion('breath')">Breathing</button>
+        <button class="btn-action" id="btnHover" onclick="setMotion('hover')">Hover Floating</button>
+        <button class="btn-action" id="btnBounce" onclick="setMotion('bounce')">Happy Bounce</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('robotCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // High-DPI Canvas Setup
+    function setupCanvasDPI() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = 300 * dpr;
+      canvas.height = 300 * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    setupCanvasDPI();
+
+    // Robot State Model
+    const model = {
+      color: '#2563eb',
+      darkColor: '#1d4ed8',
+      state: 'active',
+      motion: 'breath',
+      eyeColor: '#38bdf8',
+      animTime: 0,
+      blinkTimer: 0,
+      isBlinking: false
+    };
+
+    function setVisorState(st, btn) {
+      model.state = st;
+      document.querySelectorAll('.btn-state').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (st === 'error') model.eyeColor = '#ef4444';
+      else if (st === 'researching') model.eyeColor = '#fb923c';
+      else if (st === 'success') model.eyeColor = '#34d399';
+      else if (st === 'offline') model.eyeColor = '#475569';
+      else model.eyeColor = '#38bdf8';
+    }
+
+    function setColor(primary, dark, swatch) {
+      model.color = primary;
+      model.darkColor = dark;
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+    }
+
+    function setMotion(type) {
+      model.motion = type;
+      document.querySelectorAll('.btn-action').forEach(b => b.classList.remove('active'));
+      if (type === 'breath') document.getElementById('btnBreath').classList.add('active');
+      if (type === 'hover') document.getElementById('btnHover').classList.add('active');
+      if (type === 'bounce') document.getElementById('btnBounce').classList.add('active');
+    }
+
+    // Prosedural Renderer Robot SAMS
+    function drawRobot(t) {
+      const cx = 150;
+      let cy = 155;
+      let bob = 0;
+      let armAngle = 0;
+      let legCompress = 0;
+
+      // Logika Motion
+      if (model.motion === 'breath') {
+        bob = Math.sin(t * 3) * 2;
+      } else if (model.motion === 'hover') {
+        bob = Math.sin(t * 4) * 8 - 8;
+        armAngle = Math.sin(t * 4) * 0.15;
+      } else if (model.motion === 'bounce') {
+        bob = -Math.abs(Math.sin(t * 6)) * 14;
+        armAngle = Math.sin(t * 6) * 0.25;
+        if (bob > -2) legCompress = 2;
+      }
+
+      cy += bob;
+
+      // 1. Soft Floor Shadow
+      const shadowScale = 1 - (bob / -30);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.12)';
+      ctx.beginPath();
+      ctx.ellipse(cx, 260, Math.max(8, 48 * shadowScale), Math.max(3, 16 * shadowScale), 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Kaki Silinder (Legs)
+      const legY = cy + 44;
+      ctx.fillStyle = '#1e293b';
+      // Kaki Kiri
+      ctx.beginPath();
+      ctx.roundRect(cx - 28, legY - legCompress, 18, 42 + legCompress, 9);
+      ctx.fill();
+      // Kaki Kanan
+      ctx.beginPath();
+      ctx.roundRect(cx + 10, legY - legCompress, 18, 42 + legCompress, 9);
+      ctx.fill();
+
+      // Sepatu Gelap
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.roundRect(cx - 30, legY + 28, 22, 16, 8);
+      ctx.roundRect(cx + 8, legY + 28, 22, 16, 8);
+      ctx.fill();
+
+      // 3. Tangan / Lengan (Floating Arm Pods)
+      ctx.save();
+      // Lengan Kiri
+      ctx.translate(cx - 52, cy + 16);
+      ctx.rotate(-armAngle);
+      ctx.fillStyle = model.color;
+      ctx.beginPath();
+      ctx.roundRect(-10, -6, 20, 48, 10);
+      ctx.fill();
+      ctx.fillStyle = model.darkColor;
+      ctx.beginPath();
+      ctx.arc(0, 36, 8, 0, Math.PI * 2); // Tangan membulat
+      ctx.fill();
+      ctx.restore();
+
+      // Lengan Kanan
+      ctx.save();
+      ctx.translate(cx + 52, cy + 16);
+      ctx.rotate(armAngle);
+      ctx.fillStyle = model.color;
+      ctx.beginPath();
+      ctx.roundRect(-10, -6, 20, 48, 10);
+      ctx.fill();
+      ctx.fillStyle = model.darkColor;
+      ctx.beginPath();
+      ctx.arc(0, 36, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 4. Bodi Kapsul (Torso)
+      const bodyGrad = ctx.createLinearGradient(cx - 45, cy - 20, cx + 45, cy + 60);
+      bodyGrad.addColorStop(0, model.color);
+      bodyGrad.addColorStop(1, model.darkColor);
+
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.roundRect(cx - 45, cy - 16, 90, 76, 32);
+      ctx.fill();
+
+      // Plat Dada Minimalis
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.beginPath();
+      ctx.roundRect(cx - 24, cy + 8, 48, 32, 12);
+      ctx.fill();
+
+      // 5. Kepala / Helm Kapsul
+      const headY = cy - 70;
+      const headGrad = ctx.createLinearGradient(cx - 58, headY - 45, cx + 58, headY + 45);
+      headGrad.addColorStop(0, model.color);
+      headGrad.addColorStop(1, model.darkColor);
+
+      ctx.fillStyle = headGrad;
+      ctx.beginPath();
+      ctx.roundRect(cx - 58, headY - 42, 116, 88, 38);
+      ctx.fill();
+
+      // Telinga Pod Kiri & Kanan
+      ctx.fillStyle = model.darkColor;
+      ctx.beginPath();
+      ctx.roundRect(cx - 64, headY - 14, 8, 28, 4);
+      ctx.roundRect(cx + 56, headY - 14, 8, 28, 4);
+      ctx.fill();
+
+      // 6. Visor Kaca Hitam Mengkilap
+      const visorW = 86;
+      const visorH = 54;
+      const visorX = cx - visorW / 2;
+      const visorY = headY - 26;
+
+      ctx.fillStyle = '#060911';
+      ctx.beginPath();
+      ctx.roundRect(visorX, visorY, visorW, visorH, 18);
+      ctx.fill();
+
+      // Highlight Pantulan Kaca Visor
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(visorX + 2, visorY + 2, visorW - 4, visorH - 4, 16);
+      ctx.stroke();
+
+      // 7. Render Layar Mata LED Visor
+      renderVisorEyes(cx, visorY + visorH / 2, t);
+    }
+
+    function renderVisorEyes(vx, vy, t) {
+      ctx.save();
+      ctx.shadowColor = model.eyeColor;
+      ctx.shadowBlur = (model.state === 'offline') ? 0 : 12;
+      ctx.fillStyle = model.eyeColor;
+
+      const eyeSpacing = 18;
+      const eyeW = 12;
+      const eyeH = 22;
+
+      // Animasi Berkedip Alami
+      let currentEyeH = eyeH;
+      if (model.isBlinking && model.state === 'idle') {
+        currentEyeH = 2;
+      }
+
+      if (model.state === 'idle') {
+        // Sepasang Kapsul LED Tegak
+        ctx.beginPath();
+        ctx.roundRect(vx - eyeSpacing - eyeW / 2, vy - currentEyeH / 2, eyeW, currentEyeH, 5);
+        ctx.roundRect(vx + eyeSpacing - eyeW / 2, vy - currentEyeH / 2, eyeW, currentEyeH, 5);
+        ctx.fill();
+
+      } else if (model.state === 'active') {
+        // Mata Besar Fokus & Hidup
+        ctx.beginPath();
+        ctx.roundRect(vx - eyeSpacing - 8, vy - 14, 16, 28, 6);
+        ctx.roundRect(vx + eyeSpacing - 8, vy - 14, 16, 28, 6);
+        ctx.fill();
+
+      } else if (model.state === 'researching') {
+        // Scanlines Horizontal Bergerak Naik-Turun
+        const scanY = Math.sin(t * 6) * 3;
+        ctx.fillRect(vx - eyeSpacing - 9, vy - 8 + scanY, 18, 5);
+        ctx.fillRect(vx - eyeSpacing - 9, vy + 3 - scanY, 18, 5);
+
+        ctx.fillRect(vx + eyeSpacing - 9, vy - 8 + scanY, 18, 5);
+        ctx.fillRect(vx + eyeSpacing - 9, vy + 3 - scanY, 18, 5);
+
+      } else if (model.state === 'error') {
+        // Silang X X Glitch
+        ctx.font = '800 20px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const glitch = (Math.sin(t * 30) > 0.8) ? 2 : 0;
+        ctx.fillText('X', vx - eyeSpacing + glitch, vy);
+        ctx.fillText('X', vx + eyeSpacing - glitch, vy);
+
+      } else if (model.state === 'offline') {
+        // Garis Redup
+        ctx.fillRect(vx - eyeSpacing - 8, vy - 2, 16, 4);
+        ctx.fillRect(vx + eyeSpacing - 8, vy - 2, 16, 4);
+
+      } else if (model.state === 'success') {
+        // Lengkungan Bahagia ^ ^
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = model.eyeColor;
+        ctx.beginPath();
+        ctx.arc(vx - eyeSpacing, vy + 2, 8, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(vx + eyeSpacing, vy + 2, 8, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // Main Animation Loop
+    let lastTime = performance.now();
+    function loop(now) {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+      model.animTime += dt;
+
+      // Timer Kedip Acak
+      model.blinkTimer += dt;
+      if (model.blinkTimer > 3.5) {
+        model.isBlinking = true;
+        if (model.blinkTimer > 3.65) {
+          model.isBlinking = false;
+          model.blinkTimer = 0;
+        }
+      }
+
+      ctx.clearRect(0, 0, 300, 300);
+      drawRobot(model.animTime);
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

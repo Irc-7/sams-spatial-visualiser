@@ -1,0 +1,26 @@
+{
+  "name": "sams-spatial-visualiser",
+  "version": "1.0.0",
+  "private": true,
+  "description": "2D Isometric operational canvas dashboard for multi-agent AI systems with dynamic LED visors",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  },
+  "keywords": [
+    "isometric",
+    "canvas-2d",
+    "multi-agent",
+    "dashboard",
+    "ai-agent",
+    "telemetry",
+    "spatial-ui"
+  ],
+  "author": "SAMS Architecture Team",
+  "license": "MIT"
+}
